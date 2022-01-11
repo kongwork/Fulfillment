@@ -1,0 +1,32 @@
+body{
+    font-family: 'Prompt', sans-serif;
+    background-color: rgb(219, 219, 219)
+}
+.center-1 {
+    display: block;
+    margin: auto;
+    width: 450px;
+    border-radius: 10px;
+    background-color: rgb(255, 255, 255);
+    padding: 50px;
+    box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.2)
+}
+.center-2 {
+    display: block;
+    margin: auto;
+}
+.right {
+    text-align: right;
+    float: right;
+}
+.error {
+    text-align: center;
+    color: red;
+    background-color: #ffe6e6;
+}
+.input-add-u{
+    width: 500px;
+}
+td {
+  vertical-align: middle;
+}
