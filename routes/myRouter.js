@@ -231,8 +231,10 @@ router.post("/update", (req, res) => {
 router.post("/update_group", (req, res) => {
   // ข้อมูลใหม่ที่ส่งมาจาก form edit
   const update_group = req.body.group_id
+  let date = new Date();
   let data = {
-    groupname: req.body.groupname
+    groupname: req.body.groupname,
+    lastUpdate: date.toLocaleString("th-TH"),
   }
   // อัพเดตข้อมูล Group
   Group.findByIdAndUpdate(update_group,data,{useFindAndModify:false}).exec(err => {
@@ -279,8 +281,12 @@ router.post('/insert',(req,res)=>{
 
 //------------------------------------------------------------------------------------ เพิ่มข้อมูล Group
 router.post('/insert_group',(req,res)=>{
+  const name = req.cookies.username;
+  let date = new Date();
   let data = new Group({
-    groupname: req.body.groupname
+    groupname: req.body.groupname,
+    createdBy: name,
+    lastUpdate: date.toLocaleString("th-TH"),
   })
   Group.saveGroup(data,(err)=>{
     if(err)

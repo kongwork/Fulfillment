@@ -55,6 +55,8 @@
                         <tr>
                             <th scope="col">#</th>
                             <th scope="col">ประเภทสินค้า</th>
+                            <th>สร้างโดย</th>
+                            <th>อัพเดทล่าสุด</th>
                             <th></th>
                             <th></th>
                         </tr>
@@ -64,6 +66,8 @@
                         <tr>
                             <td><%= order++ %></td>
                             <td><%= item.groupname %></td>
+                            <td><%= item.createdBy %></td>
+                            <td><%= item.lastUpdate %></td>
                             <td>
                                 <form class="d-flex" action="/edit_group" method="post">
                                     <input type="text" name="edit_group" value="<%= item._id %>" hidden>

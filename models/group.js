@@ -12,7 +12,9 @@ mongoose
 
 // design Schema
 let groupSchema = mongoose.Schema({
-  groupname: String
+  groupname: String,
+  createdBy: String,
+  lastUpdate: String
 });
 
 // create model
