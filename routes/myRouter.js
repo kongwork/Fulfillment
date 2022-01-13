@@ -2,7 +2,8 @@ const express = require("express")
 const router = express.Router()
 const User = require('../models/user')
 const Group = require("../models/group")
-var nodemailer = require("nodemailer");
+const Stock = require("../models/stock")
+var nodemailer = require("nodemailer")
 
 
 /*User.findOne({ username: "kong" }).exec((err, doc) => {
@@ -20,27 +21,19 @@ router.get("/group", (req, res) => {
   else{
     res.redirect('/')
   }
-  /*let order = 1
-  User.find().exec((err,doc)=>{
-    res.render("group", { users: doc, order: order })
-  })*/
 })
 
 router.get("/stock", (req, res) => {
   const showname = req.cookies.username
   if(req.cookies.login){
     let order = 1
-    User.find().exec((err,doc)=>{
-      res.render("stock", { users: doc, order: order, showname: showname })
+    Stock.find().exec((err,doc)=>{
+      res.render("stock", { stocks: doc, order: order, showname: showname })
     })
   }
   else{
     res.redirect('/')
   }
-  /*let order = 1
-  User.find().exec((err,doc)=>{
-    res.render("stock", { users: doc, order: order })
-  })*/
 })
 
 router.get("/form_AddUser", (req, res) => {
@@ -51,7 +44,6 @@ router.get("/form_AddUser", (req, res) => {
   else{
     res.redirect('/')
   }
-  //res.render("form_AddUser.ejs")
 })
 
 router.get("/form_AddGroup", (req, res) => {
@@ -64,15 +56,29 @@ router.get("/form_AddGroup", (req, res) => {
   }
 })
 
+router.get("/form_AddStock", (req, res) => {
+  const showname = req.cookies.username
+  Group.find().exec((err, doc) => {
+    if (req.cookies.login) {
+      res.render("form_AddStock.ejs", { showname: showname, groups: doc });
+    } else {
+      res.redirect("/");
+    }
+  });
+})
+
 router.get("/forgot_password", (req, res) => {
   res.render('forgot_password.ejs')
 })
 
 router.get("/change_pass", (req, res) => {
-  const a = 'a'
-  const t = 1000;
-  res.cookie('time',a,{maxAge: t})
-  res.render("change_pass");
+  console.log(req.cookies.email)
+  if(req.cookies.changepass){
+    res.render("change_pass.ejs");
+  }
+  else {
+    res.redirect('/')
+  }
 });
 
 router.get('/logout',(req,res)=>{
@@ -122,6 +128,14 @@ router.get("/delete_group/:id", (req, res) => {
   Group.findByIdAndDelete(req.params.id,{useFindAndModify:false}).exec(err=>{
     if(err) console.log(err)
     res.redirect('/group')
+  })
+})
+
+//------------------------------------------------------------------------------------ Delete Data Stock
+router.get("/delete_stock/:id", (req, res) => {
+  Stock.findByIdAndDelete(req.params.id,{useFindAndModify:false}).exec(err=>{
+    if(err) console.log(err)
+    res.redirect('/stock')
   })
 })
 
@@ -209,6 +223,56 @@ router.post("/edit_group", (req, res) => {
   }
 })
 
+//------------------------------------------------------------------------------------ Edit Data Stock
+router.post("/edit_stock", (req, res) => {
+  const edit_stock = req.body.edit_stock
+  const showname  = req.cookies.username
+  Group.find().exec((err, doct) => {
+    if (req.cookies.login) {
+      Stock.findOne({ _id: edit_stock }).exec((err, doc) => {
+        res.render("edit_stock", { stock: doc,groups: doct, showname: showname })
+      })
+    } else {
+      res.redirect("/")
+    }
+  })
+  /*if(req.cookies.login){
+    Stock.findOne({ _id: edit_stock }).exec((err, doc) => {
+      res.render("edit_stock", { stock: doc, showname: showname })
+    })
+  }
+  else{
+    res.redirect('/')
+  }*/
+})
+
+//------------------------------------------------------------------------------------ reset pass
+router.post("/re_pass", (req, res) => {
+  // ข้อมูลที่ส่งมาจาก form edit
+  const pass = req.body.pass
+  const pass_confirm = req.body.pass_confirm;
+  const email = req.cookies.email
+  if(pass ===  pass_confirm){
+    console.log(pass)
+    console.log(pass)
+    let data = {
+      password: req.body.pass_confirm,
+    };
+    User.findOneAndUpdate(email,data,{useFindAndModify:false}).exec(err => {
+      res.clearCookie("email")
+      res.clearCookie("changepass")
+      res.redirect("/")
+    })
+  }
+  /*let data = {
+    password: req.body.password,
+  }
+  // อัพเดตข้อมูล User
+  User.findByIdAndUpdate(email,data,{useFindAndModify:false}).exec(err => {
+    res.redirect("/user")
+  })*/
+})
+
 //------------------------------------------------------------------------------------ Update Data User
 router.post("/update", (req, res) => {
   // ข้อมูลใหม่ที่ส่งมาจาก form edit
@@ -239,6 +303,22 @@ router.post("/update_group", (req, res) => {
   // อัพเดตข้อมูล Group
   Group.findByIdAndUpdate(update_group,data,{useFindAndModify:false}).exec(err => {
     res.redirect("/group")
+  })
+})
+
+router.post("/update_stock", (req, res) => {
+  // ข้อมูลใหม่ที่ส่งมาจาก form edit
+  const update_stock = req.body.stock_id
+  let date = new Date();
+  let data = {
+    productName: req.body.productName,
+    Group: req.body.Group,
+    amount: req.body.amount,
+    lastUpdate: date.toLocaleString("th-TH"),
+  }
+  // อัพเดตข้อมูล Group
+  Stock.findByIdAndUpdate(update_stock,data,{useFindAndModify:false}).exec(err => {
+    res.redirect("/stock")
   })
 })
 
@@ -295,12 +375,29 @@ router.post('/insert_group',(req,res)=>{
   })
 })
 
+//------------------------------------------------------------------------------------ เพิ่มข้อมูล Stock
+router.post('/insert_stock',(req,res)=>{
+  const name = req.cookies.username;
+  let date = new Date();
+  let data = new Stock({
+    productName: req.body.productName,
+    Group: req.body.groupname,
+    amount: req.body.amount,
+    createdBy: name,
+    lastUpdate: date.toLocaleString("th-TH"),
+  });
+  Stock.saveStock(data,(err)=>{
+    if(err)
+    console.log(err)
+    res.redirect('/stock')
+  })
+})
+
 router.post('/send_pass',(req,res)=>{
   const email = req.body.email
+  const time = 30000; //60000 = 1 นาที
   User.findOne({email: email}).exec((err, doc)=>{
-    console.log(doc.email)
-    console.log(err);
-    /*if (email != doc.email) {
+    if (email != doc.email) {
       res.redirect('/forgot_password')
     }
     else {
@@ -327,8 +424,11 @@ router.post('/send_pass',(req,res)=>{
           console.log("Email sent: " + info.response);
         }
       });
+      //-------------------------------------------------------------------------------------- สร้าง cookie
+      res.cookie("email", doc.email, { maxAge: time });
+      res.cookie("changepass", true, { maxAge: time });
       res.redirect("/");
-    }*/
+    }
   })
 })
 
@@ -336,28 +436,32 @@ router.post('/send_pass',(req,res)=>{
 router.post('/login',(req,res)=>{
   const username = req.body.username
   const password = req.body.password
-  const t = 3000
-
   User.findOne({ username: username }).exec((err, doc) => {
-    if (username === doc.username && password === doc.password) {
-      res.cookie("username", doc.username)
-      res.cookie("password", doc.password)
-      res.cookie("login", true)
-      res.redirect("/user")
-      /*req.session.username = 'username';
-      req.session.password = 'password';
-      req.session.login = true;
-      req.session.cookie.maxAge = t
-      res.redirect('/g')*/
+    if (!doc) {
+      res.redirect('/')
     }
     else {
-      res.redirect("/")
+      if (username === doc.username && password === doc.password) {
+        res.cookie("username", doc.username)
+        res.cookie("password", doc.password)
+        res.cookie("login", true)
+        res.redirect("/user")
+        /*req.session.username = req.body.username
+        req.session.password = req.body.password
+        req.session.login = true
+        req.session.cookie.maxAge = 30000*/
+      }
+      else {
+        res.redirect("/")
+      }
     }
   })
 })
 
-router.get("/g", (req, res) => {
+/*router.get("/g", (req, res) => {
+  console.log('รหัส ss = ', req.sessionID)
+  console.log("ข้อมูลใน ss = ", req.session);
   res.render("g");
-});
+});*/
 
 module.exports = router

@@ -46,7 +46,7 @@
                                 Search
                             </button>
                             <a class="btn" style="background-color: #ffa600; width: 170px; color: white; margin-left: 5px;"
-                                href="/form_AddUser">+AddStock</a>
+                                href="/form_AddStock">+AddStock</a>
                         </form>
                     </div>
                 </nav>
@@ -54,25 +54,27 @@
                     <thead>
                         <tr>
                             <th scope="col">#</th>
-                            <th scope="col">ชื่อผู้ใช้</th>
-                            <th scope="col">บริษัท</th>
-                            <th scope="col">อีเมล</th>
-                            <th scope="col">เบอร์โทร</th>
+                            <th scope="col">ชื่อสินค้า</th>
+                            <th scope="col">ประเภทสินค้า</th>
+                            <th scope="col">จำนวนสินค้า</th>
+                            <th scope="col">สร้างโดย</th>
+                            <th scope="col">อัพเดทล่าสุด</th>
                             <th></th>
                             <th></th>
                         </tr>
                     </thead>
                     <tbody>
-                        <% Object.values(users).forEach(function(item){%>
+                        <% Object.values(stocks).forEach(function(item){%>
                         <tr>
                             <td vertical-align: bottom;><%= order++ %></td>
-                            <td><%= item.username %></td>
-                            <td><%= item.companyName %></td>
-                            <td><%= item.email %></td>
-                            <td><%= item.phoneNumber %></td>
+                            <td><%= item.productName %></td>
+                            <td><%= item.Group %></td>
+                            <td><%= item.amount %></td>
+                            <td><%= item.createdBy %></td>
+                            <td><%= item.lastUpdate %></td>
                             <td>
-                                <form class="d-flex" action="/edit" method="post">
-                                    <input type="text" name="edit_user" value="<%= item._id %>" hidden>
+                                <form class="d-flex" action="/edit_stock" method="post">
+                                    <input type="text" name="edit_stock" value="<%= item._id %>" hidden>
                                     <button class="btn" type="submit">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square"
                                             viewBox="0 0 16 16">
@@ -85,7 +87,7 @@
                                 </form>
                             </td>
                             <td>
-                                <a class="btn" href="/delete/<%= item._id %>" onclick="return confirm('ต้องการที่จะลบ ?')">
+                                <a class="btn" href="/delete_stock/<%= item._id %>" onclick="return confirm('ต้องการที่จะลบ ?')">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash"
                                         viewBox="0 0 16 16">
                                         <path

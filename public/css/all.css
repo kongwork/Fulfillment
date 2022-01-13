@@ -30,3 +30,7 @@ body{
 td {
   vertical-align: middle;
 }
+.text-b-t-cen {
+    margin-top: auto;
+    margin-bottom: auto;
+}
