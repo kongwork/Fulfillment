@@ -4,6 +4,7 @@ const User = require('../models/user')
 const Group = require("../models/group")
 const Stock = require("../models/stock")
 var nodemailer = require("nodemailer")
+const XLSX = require('xlsx')
 
 
 /*User.findOne({ username: "kong" }).exec((err, doc) => {
@@ -27,9 +28,21 @@ router.get("/stock", (req, res) => {
   const showname = req.cookies.username
   if(req.cookies.login){
     let order = 1
-    Stock.find().exec((err,doc)=>{
-      res.render("stock", { stocks: doc, order: order, showname: showname })
+    Group.find().exec((err, doct) => {
+    /*if (req.cookies.login) {
+      Stock.findOne({ _id: edit_stock }).exec((err, doc) => {
+        res.render("edit_stock", { stock: doc,groups: doct, showname: showname })
+      })
+    } else {
+      res.redirect("/")
+    }*/
+      Stock.find().exec((err, doc) => {
+        res.render("stock", { stocks: doc, groups: doct, order: order, showname: showname })
+      })
     })
+    /*Stock.find().exec((err,doc)=>{
+      res.render("stock", { stocks: doc, order: order, showname: showname })
+    })*/
   }
   else{
     res.redirect('/')
@@ -183,6 +196,45 @@ router.post("/search_group", (req, res) => {
       Group.find(query).exec((err, doc) => {
         res.render("search_group", { groups: doc, order: order, showname: showname })
         console.log(doc)
+      })
+    }
+  }
+  else {
+    res.redirect('/')
+  }
+})
+
+//------------------------------------------------------------------------------------ Search Data Stock
+router.post("/search_stock", (req, res) => {
+  const showname = req.cookies.username
+  if(req.cookies.login){
+    let order = 1
+    let query = { productName: req.body.search }
+    let filter = { Group: req.body.filter_group }
+    let group_select = req.body.filter_group
+    let input_search = '' + req.body.search
+    if (group_select === 'ทั้งหมด' && input_search === "") {
+      res.redirect("/stock")
+    }
+    else if (input_search === "" && group_select != 'ทั้งหมด') {
+      Group.find().exec((err, doct) => {
+        Stock.find(filter).exec((err, doc) => {
+          res.render("search_stock", { stocks: doc,groups: doct, order: order, showname: showname, a: group_select, b: input_search })
+        })
+      })
+    }
+    else if (input_search != "" && group_select != 'ทั้งหมด') {
+      Group.find().exec((err, doct) => {
+        Stock.find({ productName: input_search, Group: group_select }).exec((err, doc) => {
+          res.render("search_stock", { stocks: doc,groups: doct, order: order, showname: showname, a: group_select, b: input_search })
+        })
+      })
+    }
+    else {
+      Group.find().exec((err, doct) => {
+        Stock.find(query).exec((err, doc) => {
+          res.render("search_stock", { stocks: doc,groups: doct, order: order, showname: showname, a: group_select, b: input_search })
+        })
       })
     }
   }
@@ -361,8 +413,8 @@ router.post('/insert',(req,res)=>{
 
 //------------------------------------------------------------------------------------ เพิ่มข้อมูล Group
 router.post('/insert_group',(req,res)=>{
-  const name = req.cookies.username;
-  let date = new Date();
+  const name = req.cookies.username
+  let date = new Date()
   let data = new Group({
     groupname: req.body.groupname,
     createdBy: name,
@@ -393,6 +445,7 @@ router.post('/insert_stock',(req,res)=>{
   })
 })
 
+//------------------------------------------------------------------------------------ ส่งเมล
 router.post('/send_pass',(req,res)=>{
   const email = req.body.email
   const time = 30000; //60000 = 1 นาที
@@ -456,6 +509,86 @@ router.post('/login',(req,res)=>{
       }
     }
   })
+})
+
+//------------------------------------------------------------------------------------ Export file xlsx
+router.post('/export', (req, res) => {
+  let query = { productName: req.body.search }
+  let filter = { Group: req.body.filter_group }
+  let group_select = req.body.filter_group
+  let input_search = '' + req.body.search
+  if (group_select === 'ทั้งหมด' && input_search === "") {
+    Stock.find().exec((err, doc) => {
+      const file_name = "file export" + ".xlsx"
+      let wb = XLSX.utils.book_new()
+      if (err) {
+        console.log(err)
+      }
+      else {
+        let tem = JSON.stringify(doc)
+        tem = JSON.parse(tem)
+        let ws = XLSX.utils.json_to_sheet(tem)
+        let dow = "./exportfile/" + file_name
+        XLSX.utils.book_append_sheet(wb, ws, "sheet1")
+        XLSX.writeFile(wb, dow)
+        res.redirect('/stock')
+      }
+    })
+  }
+  else if (input_search === "" && group_select != 'ทั้งหมด') {
+    Stock.find(filter).exec((err, doc) => {
+      const file_name = "data group" + ".xlsx"
+      let wb = XLSX.utils.book_new()
+      if (err) {
+        console.log(err)
+      }
+      else {
+        let tem = JSON.stringify(doc)
+        tem = JSON.parse(tem)
+        let ws = XLSX.utils.json_to_sheet(tem)
+        let dow = "./exportfile/" + file_name
+        XLSX.utils.book_append_sheet(wb, ws, "sheet1")
+        XLSX.writeFile(wb, dow)
+        res.redirect('/stock')
+      }
+    })
+  }
+  else if (input_search != "" && group_select != 'ทั้งหมด') {
+    Stock.find({ productName: input_search, Group: group_select }).exec((err, doc) => {
+      const file_name = "file export" + ".xlsx"
+      let wb = XLSX.utils.book_new()
+      if (err) {
+        console.log(err)
+      }
+      else {
+        let tem = JSON.stringify(doc)
+        tem = JSON.parse(tem)
+        let ws = XLSX.utils.json_to_sheet(tem)
+        let dow = "./exportfile/" + file_name
+        XLSX.utils.book_append_sheet(wb, ws, "sheet1")
+        XLSX.writeFile(wb, dow)
+        res.redirect('/stock')
+      }
+    })
+  }
+  else {
+    Stock.find(query).exec((err, doc) => {
+      const file_name = "file export" + ".xlsx"
+      let wb = XLSX.utils.book_new()
+      if (err) {
+        console.log(err)
+      }
+      else {
+        let tem = JSON.stringify(doc)
+        tem = JSON.parse(tem)
+        let ws = XLSX.utils.json_to_sheet(tem)
+        let dow = "./exportfile/" + file_name
+        XLSX.utils.book_append_sheet(wb, ws, "sheet1")
+        XLSX.writeFile(wb, dow)
+        res.redirect('/stock')
+      }
+    })
+  }
 })
 
 /*router.get("/g", (req, res) => {
