@@ -6,6 +6,18 @@ const Stock = require("../models/stock")
 var nodemailer = require("nodemailer")
 const XLSX = require('xlsx')
 
+// อัพโหลดไฟล์
+const multer = require("multer")
+const storage = multer.diskStorage({
+  destination:function (req, file, cb) {
+    cb(null, "./public/uploads") //ตำแหน่งเก็บไฟล์
+  },
+  filename:function (req, file, cb) {
+    cb(null, Date.now()+'.xlsx') //เปลี่ยนชื่อไฟล์ ้ป้องกันชื่อไฟล์ซ้ำกัน
+  },
+})
+
+const upload = multer ({ storage: storage })
 
 /*User.findOne({ username: "kong" }).exec((err, doc) => {
   console.log(doc);
@@ -511,6 +523,33 @@ router.post('/login',(req,res)=>{
   })
 })
 
+//------------------------------------------------------------------------------------ Import file xlsx
+router.post('/import_file' , upload.single("filexlsx"), (req, res) => {
+
+  const name = req.cookies.username
+
+  const workbook = XLSX.readFile("./public/uploads/" + req.file.filename);
+  const sheetNames = workbook.SheetNames;
+
+  // Get the data of "Sheet1"
+  const worksheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetNames[0]]);
+
+  worksheet.map((doc) => {
+    let date = new Date()
+    let data = new Stock({
+      productName: doc.productName,
+      Group: doc.Group,
+      amount: doc.amount,
+      createdBy: name,
+      lastUpdate: date.toLocaleString("th-TH")
+    })
+    Stock.saveStock(data, (err) => {
+      if (err) console.log(err)
+    })
+  });
+  res.redirect('/stock')
+})
+
 //------------------------------------------------------------------------------------ Export file xlsx
 router.post('/export', (req, res) => {
   let query = { productName: req.body.search }
@@ -519,7 +558,7 @@ router.post('/export', (req, res) => {
   let input_search = '' + req.body.search
   if (group_select === 'ทั้งหมด' && input_search === "") {
     Stock.find().exec((err, doc) => {
-      const file_name = "file export" + ".xlsx"
+      const file_name = Date.now() + ".xlsx"
       let wb = XLSX.utils.book_new()
       if (err) {
         console.log(err)
@@ -537,7 +576,7 @@ router.post('/export', (req, res) => {
   }
   else if (input_search === "" && group_select != 'ทั้งหมด') {
     Stock.find(filter).exec((err, doc) => {
-      const file_name = "data group" + ".xlsx"
+      const file_name = Date.now() + ".xlsx"
       let wb = XLSX.utils.book_new()
       if (err) {
         console.log(err)
@@ -555,7 +594,7 @@ router.post('/export', (req, res) => {
   }
   else if (input_search != "" && group_select != 'ทั้งหมด') {
     Stock.find({ productName: input_search, Group: group_select }).exec((err, doc) => {
-      const file_name = "file export" + ".xlsx"
+      const file_name = Date.now() + ".xlsx"
       let wb = XLSX.utils.book_new()
       if (err) {
         console.log(err)
@@ -573,7 +612,7 @@ router.post('/export', (req, res) => {
   }
   else {
     Stock.find(query).exec((err, doc) => {
-      const file_name = "file export" + ".xlsx"
+      const file_name = Date.now() + ".xlsx"
       let wb = XLSX.utils.book_new()
       if (err) {
         console.log(err)

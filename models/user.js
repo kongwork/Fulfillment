@@ -15,7 +15,8 @@ let userSchema = mongoose.Schema({
   phoneNumber: String,
   companyName: String,
   address: String,
-  password: String
+  password: String,
+  typeUser: String
 });
 
 // create model
