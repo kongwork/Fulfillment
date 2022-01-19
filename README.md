@@ -9,3 +9,5 @@ kong
     - เพิ่ม แก้ไข Stock
 
     - import และ export file
+
+    - Search
