@@ -37,6 +37,14 @@
                 <form action="/update" method="post" style="padding: 20px 100px 0 100px;">
                     <input type="text" name="user_id" value="<%= user._id %>" hidden>
                     <div class="mb-3 input-add-u">
+                        <label class="form-label">Type User</label>
+                        <select class="form-select" name="typeUser" aria-label="Default select example">
+                            <option hidden selected><%= user.typeUser %></option>
+                            <option>Admin</option>
+                            <option>User</option>
+                        </select>
+                    </div>
+                    <div class="mb-3 input-add-u">
                         <label for="" class="form-label">ชื่อผู้ใช้</label>
                         <input type="text" class="form-control" id="" name="username" placeholder="namecom" value="<%= user.username %>">
                     </div>

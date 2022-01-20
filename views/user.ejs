@@ -54,6 +54,7 @@
                             <th scope="col">บริษัท</th>
                             <th scope="col">อีเมล</th>
                             <th scope="col">เบอร์โทร</th>
+                            <th>สถานะ</th>
                             <th></th>
                             <th></th>
                         </tr>
@@ -66,6 +67,7 @@
                             <td><%= item.companyName %></td>
                             <td><%= item.email %></td>
                             <td><%= item.phoneNumber %></td>
+                            <td><%= item.typeUser %></td>
                             <td>
                                 <form class="d-flex" action="/edit" method="post">
                                     <input type="text" name="edit_user" value="<%= item._id %>" hidden>

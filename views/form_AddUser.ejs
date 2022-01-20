@@ -36,8 +36,15 @@
                 <br>
                 <form action="/insert" method="post" style="padding: 20px 100px 0 100px;">
                     <div class="mb-3 input-add-u">
+                        <label class="form-label">Type User</label>
+                        <select class="form-select" name="typeUser" aria-label="Default select example">
+                            <option value="admin" selected>Admin</option>
+                            <option value="user">User</option>
+                        </select>
+                    </div>
+                    <div class="mb-3 input-add-u">
                         <label for="" class="form-label">ชื่อผู้ใช้</label>
-                        <input type="text" class="form-control" id="" name="username" placeholder="namecom">
+                        <input type="text" class="form-control" name="username" placeholder="namecom">
                     </div>
                     <div class="mb-3 input-add-u">
                         <label for="" class="form-label">รหัสผ่าน</label>

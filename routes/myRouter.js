@@ -24,8 +24,8 @@ const upload = multer ({ storage: storage })
 });*/
 
 router.get("/group", (req, res) => {
-  const showname = req.cookies.username;
-  if(req.cookies.login){
+  const showname = req.session.username;
+  if(req.session.login){
     let order = 1
     Group.find().exec((err, doc) => {
       res.render("group", { groups: doc, order: order, showname: showname });
@@ -37,8 +37,8 @@ router.get("/group", (req, res) => {
 })
 
 router.get("/stock", (req, res) => {
-  const showname = req.cookies.username
-  if(req.cookies.login){
+  const showname = req.session.username
+  if(req.session.login){
     let order = 1
     Group.find().exec((err, doct) => {
     /*if (req.cookies.login) {
@@ -62,8 +62,8 @@ router.get("/stock", (req, res) => {
 })
 
 router.get("/form_AddUser", (req, res) => {
-  const showname = req.cookies.username
-  if(req.cookies.login){
+  const showname = req.session.username
+  if(req.session.login){
     res.render("form_AddUser.ejs", { showname: showname })
   }
   else{
@@ -72,8 +72,8 @@ router.get("/form_AddUser", (req, res) => {
 })
 
 router.get("/form_AddGroup", (req, res) => {
-  const showname = req.cookies.username
-  if(req.cookies.login){
+  const showname = req.session.username
+  if(req.session.login){
     res.render("form_AddGroup.ejs", { showname: showname })
   }
   else{
@@ -82,9 +82,9 @@ router.get("/form_AddGroup", (req, res) => {
 })
 
 router.get("/form_AddStock", (req, res) => {
-  const showname = req.cookies.username
+  const showname = req.session.username
   Group.find().exec((err, doc) => {
-    if (req.cookies.login) {
+    if (req.session.login) {
       res.render("form_AddStock.ejs", { showname: showname, groups: doc });
     } else {
       res.redirect("/");
@@ -106,11 +106,15 @@ router.get("/change_pass", (req, res) => {
   }
 });
 
+//---------------------------------------------------------------------------- logout
 router.get('/logout',(req,res)=>{
-  res.clearCookie('username')
+  req.session.destroy((err) => {
+    res.redirect("/")
+  })
+  /*res.clearCookie('username')
   res.clearCookie("password")
   res.clearCookie("login")
-  res.redirect("/")
+  res.redirect("/")*/
 })
 
 router.get("/", (req, res) => {
@@ -124,12 +128,12 @@ router.get("/", (req, res) => {
 router.get("/user", (req, res) => {
   /*console.log("รหัส",req.sessionID)
   console.log("ข้อมูล",req.session)*/
-  const showname  = req.cookies.username
+  const showname  = req.session.username
   /*let order = 1
   User.find().exec((err,doc)=>{
     res.render("user", { users: doc, order: order})
   })*/
-  if(req.cookies.login){
+  if(req.session.login && req.session.typeUser === 'Admin'){
     let order = 1
     User.find().exec((err,doc)=>{
       res.render("user", { users: doc, order: order, showname: showname})
@@ -166,8 +170,8 @@ router.get("/delete_stock/:id", (req, res) => {
 
 //------------------------------------------------------------------------------------ Search Data User
 router.post("/search", (req, res) => {
-  const showname = req.cookies.username
-  if(req.cookies.login){
+  const showname = req.session.username
+  if(req.session.login && req.session.typeUser === 'Admin'){
     let order = 1
     //let query = { username: { $regex: /^MOSY/i } }
     //let username = { username: req.body.search }
@@ -176,7 +180,6 @@ router.post("/search", (req, res) => {
     res.render("search_user", { users: doc, order: order })
     console.log(doc)
   })*/
-
     input_search_null = req.body.search
     if (input_search_null === "") {
       res.redirect("/user")
@@ -195,8 +198,8 @@ router.post("/search", (req, res) => {
 
 //------------------------------------------------------------------------------------ Search Data Group
 router.post("/search_group", (req, res) => {
-  const showname = req.cookies.username
-  if(req.cookies.login){
+  const showname = req.session.username;
+  if(req.session.login){
     let order = 1
     let query = { groupname: req.body.search }
 
@@ -218,8 +221,8 @@ router.post("/search_group", (req, res) => {
 
 //------------------------------------------------------------------------------------ Search Data Stock
 router.post("/search_stock", (req, res) => {
-  const showname = req.cookies.username
-  if(req.cookies.login){
+  const showname = req.session.username
+  if(req.session.login){
     let order = 1
     let query = { productName: req.body.search }
     let filter = { Group: req.body.filter_group }
@@ -262,8 +265,8 @@ router.post("/edit", (req, res) => {
     res.render('edit_user',({user:doc}))
   })*/
   const edit_user = req.body.edit_user
-  const showname  = req.cookies.username
-  if(req.cookies.login){
+  const showname  = req.session.username
+  if(req.session.login){
     User.findOne({_id:edit_user}).exec((err,doc) => {
       res.render("edit_user", { user: doc, showname: showname })
     })
@@ -276,8 +279,8 @@ router.post("/edit", (req, res) => {
 //------------------------------------------------------------------------------------ Edit Data Group
 router.post("/edit_group", (req, res) => {
   const edit_group = req.body.edit_group
-  const showname  = req.cookies.username
-  if(req.cookies.login){
+  const showname  = req.session.username
+  if(req.session.login){
     Group.findOne({ _id: edit_group }).exec((err, doc) => {
       res.render("edit_group", { group: doc, showname: showname })
     })
@@ -290,9 +293,9 @@ router.post("/edit_group", (req, res) => {
 //------------------------------------------------------------------------------------ Edit Data Stock
 router.post("/edit_stock", (req, res) => {
   const edit_stock = req.body.edit_stock
-  const showname  = req.cookies.username
+  const showname  = req.session.username
   Group.find().exec((err, doct) => {
-    if (req.cookies.login) {
+    if (req.session.login) {
       Stock.findOne({ _id: edit_stock }).exec((err, doc) => {
         res.render("edit_stock", { stock: doc,groups: doct, showname: showname })
       })
@@ -348,6 +351,7 @@ router.post("/update", (req, res) => {
     companyName: req.body.companyName,
     address: req.body.address,
     password: req.body.password,
+    typeUser: req.body.typeUser
   }
   // อัพเดตข้อมูล User
   User.findByIdAndUpdate(update_user,data,{useFindAndModify:false}).exec(err => {
@@ -390,10 +394,7 @@ router.post("/update_stock", (req, res) => {
 router.post('/insert',(req,res)=>{
   const username = req.body.username
   User.findOne({ username: username }).exec((err, doc) => {
-    if (username === doc.username) {
-      res.redirect('/g')
-    } 
-    else {
+    if (!doc) {
       let data = new User({
         username: req.body.username,
         email: req.body.email,
@@ -401,11 +402,15 @@ router.post('/insert',(req,res)=>{
         companyName: req.body.companyName,
         address: req.body.address,
         password: req.body.password,
+        typeUser: req.body.typeUser
       })
       User.saveUser(data, (err) => {
         if (err) console.log(err)
         res.redirect("/user")
       })
+    } 
+    else {
+      res.redirect("/form_AddUser")
     }
   })
   /*let data = new User({
@@ -425,7 +430,7 @@ router.post('/insert',(req,res)=>{
 
 //------------------------------------------------------------------------------------ เพิ่มข้อมูล Group
 router.post('/insert_group',(req,res)=>{
-  const name = req.cookies.username
+  const name = req.session.username
   let date = new Date()
   let data = new Group({
     groupname: req.body.groupname,
@@ -506,15 +511,21 @@ router.post('/login',(req,res)=>{
       res.redirect('/')
     }
     else {
-      if (username === doc.username && password === doc.password) {
-        res.cookie("username", doc.username)
-        res.cookie("password", doc.password)
-        res.cookie("login", true)
+      if (username === doc.username && password === doc.password && doc.typeUser === 'User') {
+        req.session.username = username
+        req.session.password = password
+        req.session.typeUser = 'User'
+        req.session.login = true;
+        //req.session.cookie.maxAge = 30000
+        res.redirect("/user_page_group")
+      }
+      else if (username === doc.username && password === doc.password && doc.typeUser === 'Admin') {
+        req.session.username = username
+        req.session.password = password
+        req.session.typeUser = 'Admin'
+        req.session.login = true;
+        //req.session.cookie.maxAge = 30000
         res.redirect("/user")
-        /*req.session.username = req.body.username
-        req.session.password = req.body.password
-        req.session.login = true
-        req.session.cookie.maxAge = 30000*/
       }
       else {
         res.redirect("/")
@@ -526,7 +537,7 @@ router.post('/login',(req,res)=>{
 //------------------------------------------------------------------------------------ Import file xlsx
 router.post('/import_file' , upload.single("filexlsx"), (req, res) => {
 
-  const name = req.cookies.username
+  const name = req.session.username
 
   const workbook = XLSX.readFile("./public/uploads/" + req.file.filename);
   const sheetNames = workbook.SheetNames;
@@ -630,10 +641,33 @@ router.post('/export', (req, res) => {
   }
 })
 
-/*router.get("/g", (req, res) => {
-  console.log('รหัส ss = ', req.sessionID)
-  console.log("ข้อมูลใน ss = ", req.session);
-  res.render("g");
-});*/
+//------------------------------------------------------------------------------------------------------- ส่วนของหน้า Page User
+router.get("/user_page_group", (req, res) => {
+  const showname  = req.session.username
+  if (req.session.login && req.session.typeUser === 'User') {
+    let order = 1
+    Group.find().exec((err, doc) => {
+      res.render("user_page_group", { groups: doc, order: order, showname: showname })
+    })
+  } 
+  else {
+    res.render("index")
+  }
+})
+
+router.get("/user_page_stock", (req, res) => {
+  const showname  = req.session.username
+  if (req.session.login && req.session.typeUser === 'User') {
+    let order = 1
+    Group.find().exec((err, doct) => {
+      Stock.find().exec((err, doc) => {
+        res.render("user_page_stock", { stocks: doc, groups: doct, order: order, showname: showname })
+      })
+    })
+  } 
+  else {
+    res.render("index")
+  }
+})
 
 module.exports = router
