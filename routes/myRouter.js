@@ -16,8 +16,17 @@ const storage = multer.diskStorage({
     cb(null, Date.now()+'.xlsx') //เปลี่ยนชื่อไฟล์ ้ป้องกันชื่อไฟล์ซ้ำกัน
   },
 })
+const storage_img = multer.diskStorage({
+  destination:function (req, file, cb) {
+    cb(null, "./public/uploadsIMG") //ตำแหน่งเก็บไฟล์
+  },
+  filename:function (req, file, cb) {
+    cb(null, Date.now()+'.jpg') //เปลี่ยนชื่อไฟล์ ้ป้องกันชื่อไฟล์ซ้ำกัน
+  },
+})
 
 const upload = multer ({ storage: storage })
+const upload_img = multer({ storage: storage_img })
 
 /*User.findOne({ username: "kong" }).exec((err, doc) => {
   console.log(doc);
@@ -25,7 +34,7 @@ const upload = multer ({ storage: storage })
 
 router.get("/group", (req, res) => {
   const showname = req.session.username;
-  if(req.session.login){
+  if(req.session.login && req.session.typeUser == 'Admin'){
     let order = 1
     Group.find().exec((err, doc) => {
       res.render("group", { groups: doc, order: order, showname: showname });
@@ -73,7 +82,7 @@ router.get("/form_AddUser", (req, res) => {
 
 router.get("/form_AddGroup", (req, res) => {
   const showname = req.session.username
-  if(req.session.login){
+  if(req.session.login  && req.session.typeUser == 'User'){
     res.render("form_AddGroup.ejs", { showname: showname })
   }
   else{
@@ -84,12 +93,14 @@ router.get("/form_AddGroup", (req, res) => {
 router.get("/form_AddStock", (req, res) => {
   const showname = req.session.username
   Group.find().exec((err, doc) => {
-    if (req.session.login) {
-      res.render("form_AddStock.ejs", { showname: showname, groups: doc });
-    } else {
-      res.redirect("/");
-    }
-  });
+    User.find({typeUser: 'User'}).exec((err, doc_u) => {
+      if (req.session.login) {
+        res.render("form_AddStock.ejs", { showname: showname, groups: doc, users: doc_u })
+      } else {
+        res.redirect("/")
+      }
+    })
+  })
 })
 
 router.get("/forgot_password", (req, res) => {
@@ -97,9 +108,9 @@ router.get("/forgot_password", (req, res) => {
 })
 
 router.get("/change_pass", (req, res) => {
-  console.log(req.cookies.email)
-  if(req.cookies.changepass){
-    res.render("change_pass.ejs");
+  console.log(req.session.email)
+  if(req.session.changepass){
+    res.render("change_pass.ejs")
   }
   else {
     res.redirect('/')
@@ -118,7 +129,15 @@ router.get('/logout',(req,res)=>{
 })
 
 router.get("/", (req, res) => {
-  res.render('index.ejs')
+  console.log(req.session)
+  //res.render('index.ejs', {kong: 'fdfdfdfdfdf'})
+  const passfail = 'Username หรือ Password ผิด'
+  if(req.session.login_fail != true) {
+    res.render("index.ejs", { success: '' })
+  }
+  else {
+    res.render("index.ejs", { success: passfail })
+  }
 })
 
 /*router.get("/dashboard", (req, res) => {
@@ -126,8 +145,6 @@ router.get("/", (req, res) => {
 })*/
 
 router.get("/user", (req, res) => {
-  /*console.log("รหัส",req.sessionID)
-  console.log("ข้อมูล",req.session)*/
   const showname  = req.session.username
   /*let order = 1
   User.find().exec((err,doc)=>{
@@ -258,6 +275,52 @@ router.post("/search_stock", (req, res) => {
   }
 })
 
+//------------------------------------------------------------------------------------ Product detail
+router.post("/view_detail", (req, res) => {
+  const id = req.body.detail
+  const showname  = req.session.username
+  if (req.session.typeUser == 'Admin') {
+    User.find({ typeUser: 'User' }).exec((err, doc_u) => {
+      Group.find().exec((err, doct) => {
+        if (req.session.login) {
+          Stock.findOne({ _id: id }).exec((err, doc) => {
+            res.render("product_detail", { stock: doc,groups: doct, showname: showname, users: doc_u })
+          })
+        }
+        else {
+          res.redirect("/")
+        }
+      })
+    })
+  }
+  else {
+      User.find({ typeUser: 'User' }).exec((err, doc_u) => {
+      Group.find().exec((err, doct) => {
+        if (req.session.login) {
+          Stock.findOne({ _id: id }).exec((err, doc) => {
+            res.render("user_page_product_detail", { stock: doc,groups: doct, showname: showname, users: doc_u })
+          })
+        }
+        else {
+          res.redirect("/")
+        }
+      })
+    })
+  }
+  /*User.find({ typeUser: 'User' }).exec((err, doc_u) => {
+    Group.find().exec((err, doct) => {
+      if (req.session.login) {
+        Stock.findOne({ _id: id }).exec((err, doc) => {
+          res.render("product_detail", { stock: doc,groups: doct, showname: showname, users: doc_u })
+        })
+      }
+      else {
+        res.redirect("/")
+      }
+    })
+  })*/
+})
+
 //------------------------------------------------------------------------------------ เอาข้อมูลที่จะแก้ไขไปแสดงใน form
 router.post("/edit", (req, res) => {
   /*const edit_user = req.body.edit_user
@@ -294,14 +357,17 @@ router.post("/edit_group", (req, res) => {
 router.post("/edit_stock", (req, res) => {
   const edit_stock = req.body.edit_stock
   const showname  = req.session.username
-  Group.find().exec((err, doct) => {
-    if (req.session.login) {
-      Stock.findOne({ _id: edit_stock }).exec((err, doc) => {
-        res.render("edit_stock", { stock: doc,groups: doct, showname: showname })
-      })
-    } else {
-      res.redirect("/")
-    }
+  User.find({ typeUser: 'User' }).exec((err, doc_u) => {
+    Group.find().exec((err, doct) => {
+      if (req.session.login) {
+        Stock.findOne({ _id: edit_stock }).exec((err, doc) => {
+          res.render("edit_stock", { stock: doc,groups: doct, showname: showname, users: doc_u })
+        })
+      }
+      else {
+        res.redirect("/")
+      }
+    })
   })
   /*if(req.cookies.login){
     Stock.findOne({ _id: edit_stock }).exec((err, doc) => {
@@ -320,15 +386,16 @@ router.post("/re_pass", (req, res) => {
   const pass_confirm = req.body.pass_confirm;
   const email = req.cookies.email
   if(pass ===  pass_confirm){
-    console.log(pass)
-    console.log(pass)
     let data = {
       password: req.body.pass_confirm,
     };
     User.findOneAndUpdate(email,data,{useFindAndModify:false}).exec(err => {
-      res.clearCookie("email")
-      res.clearCookie("changepass")
-      res.redirect("/")
+      /*res.clearCookie("email")
+      res.clearCookie("changepass")*/
+      req.session.destroy((err) => {
+        res.redirect("/")
+      })
+      //res.redirect("/")
     })
   }
   /*let data = {
@@ -370,24 +437,104 @@ router.post("/update_group", (req, res) => {
   }
   // อัพเดตข้อมูล Group
   Group.findByIdAndUpdate(update_group,data,{useFindAndModify:false}).exec(err => {
-    res.redirect("/group")
+    if(req.session.typeUser == 'User') {
+      res.redirect("/user_page_group")
+    }
+    else {
+      res.redirect("/group")
+    }
   })
 })
 
-router.post("/update_stock", (req, res) => {
+//------------------------------------------------------------------------------------ Update Data Stock
+router.post("/update_stock", upload_img.array("fileimg", 3), (req, res) => {
+  if(req.session.typeUser == "User"){
+    const update_stock = req.body.stock_id
+    let date = new Date();
+    let data = {
+      Group: req.body.Group,
+      lastUpdate: date.toLocaleString("th-TH")
+    }
+    Stock.findByIdAndUpdate(update_stock,data,{useFindAndModify:false}).exec(err => {
+      if (req.session.typeUser == 'User') {
+        res.redirect("/user_page_stock")
+      }
+      else {
+        res.redirect("/stock")
+      }
+    })
+  }
+  else if (req.files.filename == null && req.session.typeUser == "Admin") {
+    // ข้อมูลใหม่ที่ส่งมาจาก form edit
+    const update_stock = req.body.stock_id
+    let date = new Date();
+    let data = {
+      productName: req.body.productName,
+      Group: req.body.Group,
+      amount: req.body.amount,
+      customer: req.body.customer,
+      lastUpdate: date.toLocaleString("th-TH"),
+    }
+    // อัพเดตข้อมูล Group
+    Stock.findByIdAndUpdate(update_stock,data,{useFindAndModify:false}).exec(err => {
+      if (req.session.typeUser == 'User') {
+        res.redirect("/user_page_stock")
+      }
+      else {
+        res.redirect("/stock")
+      }
+    })
+  }
+  else {
+    // ข้อมูลใหม่ที่ส่งมาจาก form edit
+    const update_stock = req.body.stock_id
+    let date = new Date();
+    let data = {
+      productName: req.body.productName,
+      Group: req.body.Group,
+      amount: req.body.amount,
+      customer: req.body.customer,
+      imgs: {
+        img01: req.files[0].filename,
+        img02: req.files[1].filename,
+        img03: req.files[2].filename
+      },
+      lastUpdate: date.toLocaleString("th-TH"),
+    }
+    // อัพเดตข้อมูล Group
+    Stock.findByIdAndUpdate(update_stock,data,{useFindAndModify:false}).exec(err => {
+      if (req.session.typeUser == 'User') {
+        res.redirect("/user_page_stock")
+      }
+      else {
+        res.redirect("/stock")
+      }
+    })
+  }
   // ข้อมูลใหม่ที่ส่งมาจาก form edit
-  const update_stock = req.body.stock_id
+  /*const update_stock = req.body.stock_id
   let date = new Date();
   let data = {
     productName: req.body.productName,
     Group: req.body.Group,
     amount: req.body.amount,
+    customer: req.body.customer,
+    imgs: {
+      img01: req.files[0].filename,
+      img02: req.files[1].filename,
+      img03: req.files[2].filename
+    },
     lastUpdate: date.toLocaleString("th-TH"),
-  }
+  };
   // อัพเดตข้อมูล Group
   Stock.findByIdAndUpdate(update_stock,data,{useFindAndModify:false}).exec(err => {
-    res.redirect("/stock")
-  })
+    if (req.session.typeUser == 'User') {
+      res.redirect("/user_page_stock")
+    }
+    else {
+      res.redirect("/stock")
+    }
+  })*/
 })
 
 //------------------------------------------------------------------------------------ เพิ่มข้อมูล User
@@ -440,19 +587,26 @@ router.post('/insert_group',(req,res)=>{
   Group.saveGroup(data,(err)=>{
     if(err)
     console.log(err)
-    res.redirect('/group')
+    res.redirect("/user_page_group");
   })
 })
 
 //------------------------------------------------------------------------------------ เพิ่มข้อมูล Stock
-router.post('/insert_stock',(req,res)=>{
-  const name = req.cookies.username;
+router.post('/insert_stock', upload_img.array("fileimg", 3), ( req, res ) => {
+  const name = req.session.username
   let date = new Date();
   let data = new Stock({
+    productID: Date.now(),
     productName: req.body.productName,
     Group: req.body.groupname,
     amount: req.body.amount,
     createdBy: name,
+    customer: req.body.customer,
+    imgs: {
+      img01: req.files[0].filename,
+      img02: req.files[1].filename,
+      img03: req.files[2].filename
+    },
     lastUpdate: date.toLocaleString("th-TH"),
   });
   Stock.saveStock(data,(err)=>{
@@ -467,7 +621,7 @@ router.post('/send_pass',(req,res)=>{
   const email = req.body.email
   const time = 30000; //60000 = 1 นาที
   User.findOne({email: email}).exec((err, doc)=>{
-    if (email != doc.email) {
+    if (!doc) {
       res.redirect('/forgot_password')
     }
     else {
@@ -495,8 +649,11 @@ router.post('/send_pass',(req,res)=>{
         }
       });
       //-------------------------------------------------------------------------------------- สร้าง cookie
-      res.cookie("email", doc.email, { maxAge: time });
-      res.cookie("changepass", true, { maxAge: time });
+      /*res.cookie("email", doc.email, { maxAge: time });
+      res.cookie("changepass", true, { maxAge: time });*/
+      req.session.email = doc.email
+      req.session.changepass = true
+      req.session.cookie.maxAge = time
       res.redirect("/");
     }
   })
@@ -506,8 +663,11 @@ router.post('/send_pass',(req,res)=>{
 router.post('/login',(req,res)=>{
   const username = req.body.username
   const password = req.body.password
+  const er = 'pass'
   User.findOne({ username: username }).exec((err, doc) => {
-    if (!doc) {
+    if (!doc || password != doc.password) {
+      req.session.login_fail = true
+      req.session.cookie.maxAge = 1000;
       res.redirect('/')
     }
     else {
@@ -576,6 +736,7 @@ router.post('/export', (req, res) => {
         console.log(err)
       }
       else {
+        console.log()
         let tem = JSON.stringify(doc)
         tem = JSON.parse(tem)
         let ws = xlsx.utils.json_to_sheet(tem)
@@ -643,12 +804,12 @@ router.post('/export', (req, res) => {
   }
 })
 
-//------------------------------------------------------------------------------------------------------- ส่วนของหน้า Page User
+//------------------------------------------------------------------------------------------------------- ส่วนของหน้า Page User ตั้งแต่บรรทัดนี้ลงไป
 router.get("/user_page_group", (req, res) => {
   const showname  = req.session.username
   if (req.session.login && req.session.typeUser === 'User') {
     let order = 1
-    Group.find().exec((err, doc) => {
+    Group.find({ createdBy: showname }).exec((err, doc) => {
       res.render("user_page_group", { groups: doc, order: order, showname: showname })
     })
   } 
@@ -661,8 +822,8 @@ router.get("/user_page_stock", (req, res) => {
   const showname  = req.session.username
   if (req.session.login && req.session.typeUser === 'User') {
     let order = 1
-    Group.find().exec((err, doct) => {
-      Stock.find().exec((err, doc) => {
+    Group.find({ createdBy: showname }).exec((err, doct) => {
+      Stock.find({ customer: showname }).exec((err, doc) => {
         res.render("user_page_stock", { stocks: doc, groups: doct, order: order, showname: showname })
       })
     })
@@ -670,6 +831,36 @@ router.get("/user_page_stock", (req, res) => {
   else {
     res.render("index")
   }
+})
+
+router.post("/user_page_edit_group", (req, res) => {
+  const edit_group = req.body.edit_group
+  const showname  = req.session.username
+  if(req.session.login && req.session.typeUser == 'User'){
+    Group.findOne({ _id: edit_group }).exec((err, doc) => {
+      res.render("user_page_edit_group", { group: doc, showname: showname })
+    })
+  }
+  else{
+    res.redirect('/')
+  }
+})
+
+router.post("/user_page_edit_stock", (req, res) => {
+  const edit_stock = req.body.edit_stock
+  const showname  = req.session.username
+  User.find({ typeUser: 'User' }).exec((err, doc_u) => {
+    Group.find({ createdBy: showname }).exec((err, doct) => {
+      if (req.session.login && req.session.typeUser == 'User') {
+        Stock.findOne({ _id: edit_stock }).exec((err, doc) => {
+          res.render("user_page_edit_stock", { stock: doc,groups: doct, showname: showname, users: doc_u })
+        })
+      }
+      else {
+        res.redirect("/")
+      }
+    })
+  })
 })
 
 module.exports = router

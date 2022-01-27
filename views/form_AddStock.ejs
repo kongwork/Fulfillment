@@ -34,19 +34,32 @@
             <div style="width: 100%; background-color: rgb(245, 245, 245); margin-left: 2px; padding: 50px;">
                 <h2>Add Stock</h2>
                 <br>
-                <form action="/insert_stock" method="post" style="padding: 20px 100px 0 100px;">
+                <form action="/insert_stock" method="post" enctype="multipart/form-data" style="padding: 20px 100px 0 100px;">
+                    <div class="mb-3 input-add-u">
+                        <label for="" class="form-label">ชื่อลูกค้า</label>
+                        <select class="form-select" aria-label="Default select example" name="customer">
+                            <option selected value="">Open this select menu cumtomer</option>
+                            <% Object.values(users).forEach(function(item){%>
+                            <option><%= item.username %></option>
+                            <% }) %>
+                        </select>
+                    </div>
                     <div class="mb-3 input-add-u">
                         <label for="" class="form-label">ชื่อสินค้า</label>
                         <input type="text" class="form-control" id="" name="productName" placeholder="productName">
                     </div>
-                    <div class="mb-3 input-add-u">
+                    <div class="mb-3 input-add-u" hidden>
                         <label for="" class="form-label">เลื่อกประเภทสินค้า</label>
                         <select class="form-select" aria-label="Default select example" name="groupname">
-                            <option selected>Open this select menu</option>
+                            <option selected value="">Open this select menu</option>
                             <% Object.values(groups).forEach(function(item){%>
-                            <option value="<%= item.groupname %>"><%= item.groupname %></option>
+                            <option><%= item.groupname %></option>
                             <% }) %>
                         </select>
+                    </div>
+                    <div class="mb-3 input-add-u">
+                        <label for="" class="form-label">รูปสินค้า รูปที่ 1</label>
+                        <input class="form-control" name="fileimg" type="file" multiple/>
                     </div>
                     <div class="row mb-3" style="width: 250px;">
                         <label for="" class="col form-label text-b-t-cen">จำนวนสินค้า</label>

@@ -12,11 +12,18 @@ mongoose
 
 // design Schema
 let stockSchema = mongoose.Schema({
+  productID: String,
   productName: String,
   Group: String,
   createdBy: String,
+  customer: String,
   amount: Number,
   lastUpdate: String,
+  imgs: {
+    img01: String,
+    img02: String,
+    img03: String
+  }
 });
 
 // create model

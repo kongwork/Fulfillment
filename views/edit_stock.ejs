@@ -25,22 +25,31 @@
     <%- include('navbar') %>
         <div class="d-flex">
             <nav class="nav flex-column"
-                style="background-color: white; width: 350px; height: 900px; padding: 25px 0 0 30px;">
+                style="background-color: white; width: 350px; height: auto; padding: 25px 0 0 30px;">
                 <!--<a class="nav-link" href="/dashboard" style="color: #333333;">Dashboard</a>-->
-                <a class="nav-link" href="/user" style="color: #1a75ff;"><b>User</b></a>
+                <a class="nav-link" href="/user" style="color: #333333;">User</a>
                 <a class="nav-link" href="/group" style="color: #333333;">Group</a>
-                <a class="nav-link" href="/stock" style="color: #333333;">Stock</a>
+                <a class="nav-link" href="/stock" style="color: #1a75ff;"><b>Stock</b></a>
             </nav>
             <div style="width: 100%; background-color: rgb(245, 245, 245); margin-left: 2px; padding: 50px;">
                 <h2>Edit Stock</h2>
                 <br>
-                <form action="/update_stock" method="post" style="padding: 20px 100px 0 100px;">
+                <form action="/update_stock" method="post" style="padding: 20px 100px 0 100px;" enctype="multipart/form-data">
                     <input type="text" name="stock_id" value="<%= stock._id %>" hidden>
+                    <div class="mb-3 input-add-u">
+                        <label for="" class="form-label">ชื่อลูกค้า</label>
+                        <select class="form-select" aria-label="Default select example" name="customer">
+                            <option selected hidden><%= stock.cumtomer %></option>
+                            <% Object.values(users).forEach(function(item){%>
+                            <option><%= item.username %></option>
+                            <% }) %>
+                        </select>
+                    </div>
                     <div class="mb-3 input-add-u">
                         <label for="" class="form-label">ชื่อสินค้า</label>
                         <input type="text" class="form-control" id="" name="productName" value="<%= stock.productName %>" placeholder="productName">
                     </div>
-                    <div class="mb-3 input-add-u">
+                    <div class="mb-3 input-add-u" hidden>
                         <label for="" class="form-label">เลื่อกประเภทสินค้า</label>
                         <select class="form-select" aria-label="Default select example" name="Group">
                             <option hidden selected><%= stock.Group %></option>
@@ -53,6 +62,23 @@
                         <label for="" class="col form-label text-b-t-cen">จำนวนสินค้า</label>
                         <input class="col form-control" type="number" id="quantity" value="<%= stock.amount %>" name="amount" min="0" max="1000">
                     </div>
+                    <div class="mb-3 input-add-u">
+                        <label for="" class="form-label">แก้ไขรูปภาพ</label>
+                        <input class="form-control" name="fileimg" type="file" multiple/>
+                    </div>
+                    <br>
+                    <div class="row md-3">
+                        <div class="col" style="margin: auto;">
+                            <img class="mb-3" src="/uploadsIMG/<%= stock.imgs.img01 %>" alt="" width="100%" height="auto">
+                        </div>
+                        <div class="col" style="margin: auto;">
+                            <img class="mb-3" src="/uploadsIMG/<%= stock.imgs.img02 %>" alt="" width="100%" height="auto">
+                        </div>
+                        <div class="col" style="margin: auto;">
+                            <img class="mb-3" src="/uploadsIMG/<%= stock.imgs.img03 %>" alt="" width="100%" height="auto">
+                        </div>
+                    </div>
+                    <br>
                     <button class="btn btn-primary">อัพเดต</button>
                 </form>
             </div>

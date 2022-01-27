@@ -30,6 +30,11 @@
                     <br>
                     <h3 style="text-align: center"><b>Login</b></h3>
                     <br>
+                    <% if (success != '') { %>
+                    <div class="alert alert-danger" role="alert">
+                        <%= success %>
+                    </div>
+                    <% } %>
                     <label class="form-label">User Name</label>
                     <div class="input-group mb-3">
                         <input type="text" class="form-control" placeholder="Enter user name" name="username" required>
