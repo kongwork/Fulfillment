@@ -593,27 +593,45 @@ router.post('/insert_group',(req,res)=>{
 
 //------------------------------------------------------------------------------------ เพิ่มข้อมูล Stock
 router.post('/insert_stock', upload_img.array("fileimg", 3), ( req, res ) => {
-  const name = req.session.username
-  let date = new Date();
-  let data = new Stock({
-    productID: Date.now(),
-    productName: req.body.productName,
-    Group: req.body.groupname,
-    amount: req.body.amount,
-    createdBy: name,
-    customer: req.body.customer,
-    imgs: {
-      img01: req.files[0].filename,
-      img02: req.files[1].filename,
-      img03: req.files[2].filename
-    },
-    lastUpdate: date.toLocaleString("th-TH"),
-  });
-  Stock.saveStock(data,(err)=>{
-    if(err)
-    console.log(err)
-    res.redirect('/stock')
-  })
+  if (req.files.filename == null) {
+    const name = req.session.username
+    let date = new Date()
+    let data = new Stock({
+      productID: Date.now(),
+      productName: req.body.productName,
+      Group: req.body.groupname,
+      amount: req.body.amount,
+      createdBy: name,
+      customer: req.body.customer,
+      lastUpdate: date.toLocaleString("th-TH"),
+    })
+    Stock.saveStock(data, (err) => {
+      if (err) console.log(err)
+      res.redirect("/stock")
+    })
+  }
+  else {
+    const name = req.session.username
+    let date = new Date()
+    let data = new Stock({
+      productID: Date.now(),
+      productName: req.body.productName,
+      Group: req.body.groupname,
+      amount: req.body.amount,
+      createdBy: name,
+      customer: req.body.customer,
+      imgs: {
+        img01: req.files[0].filename,
+        img02: req.files[1].filename,
+        img03: req.files[2].filename,
+      },
+      lastUpdate: date.toLocaleString("th-TH"),
+    });
+    Stock.saveStock(data, (err) => {
+      if (err) console.log(err)
+      res.redirect("/stock")
+    })
+  }
 })
 
 //------------------------------------------------------------------------------------ ส่งเมล
@@ -628,8 +646,8 @@ router.post('/send_pass',(req,res)=>{
       var transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
-          user: "kongwork26729@gmail.com",
-          pass: "Nongsa26729",
+          user: "", //<<<<<<<<<<<<<<<<<<<<<<<<<<<<< ใส่เมลที่เอาไว้ส่งจดหมายไปหา User
+          pass: "", //<<<<<<<<<<<<<<<<<<<<<<<<<<<<< รหัสผ่านเมล
         },
       });
 
