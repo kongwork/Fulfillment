@@ -372,7 +372,7 @@ router.post("/edit_stock", (req, res) => {
           else {
             res.render("edit_stock", { stock: doc,groups: doct, showname: showname, users: doc_u, uploadfail: '' })
           }*/
-          res.render("edit_stock", { stock: doc,groups: doct, showname: showname, users: doc_u })
+          res.render("edit_stock", { stock: doc,groups: doct, showname: showname, users: doc_u, uploadfail: '' })
         })
       }
       else {
@@ -461,9 +461,28 @@ router.post("/update_group", (req, res) => {
 router.post("/update_stock", (req, res) => {
   upload_img(req, res, function (err) {
     if (err) {
-      const time = 1000
-      res.cookie("UpLoadImageFail", true, { maxAge: time })
-      console.log('update fial')
+      res.cookie("UpLoadImageFail", true)
+      const edit_stock = req.body.stock_id
+      const showname  = req.session.username
+      User.find({ typeUser: 'User' }).exec((err, doc_u) => {
+        Group.find().exec((err, doct) => {
+          if (req.session.login) {
+            Stock.findOne({ _id: edit_stock }).exec((err, doc) => {
+              /*if( req.cookies.UpLoadImageFail ) {
+                res.render("edit_stock", { stock: doc,groups: doct, showname: showname, users: doc_u, uploadfail: 'Upload image 3 only' })
+              }
+              else {
+                res.render("edit_stock", { stock: doc,groups: doct, showname: showname, users: doc_u, uploadfail: '' })
+              }*/
+              res.render("edit_stock", { stock: doc,groups: doct, showname: showname, users: doc_u, uploadfail: 'Upload image 3 only' })
+              //res.clearCookie("UpLoadImageFail")
+            })
+          }
+          else {
+            res.redirect("/")
+          }
+        })
+      })
     }
     else if(req.session.typeUser == "User"){
       console.log('user update')
@@ -482,7 +501,8 @@ router.post("/update_stock", (req, res) => {
         }
       })
     }
-    else if (!req.files && req.files.length === 0 && req.session.typeUser == "Admin") {
+    else if (!req.files || req.files.length === 0 && req.session.typeUser == "Admin") {
+      res.clearCookie("UpLoadImageFail")
       console.log("admin update file 0")
       // ข้อมูลใหม่ที่ส่งมาจาก form edit
       const update_stock = req.body.stock_id
@@ -505,7 +525,8 @@ router.post("/update_stock", (req, res) => {
       })
     }
     else if (req.files.length === 3) {
-      console.log("admin update file 3");
+      res.clearCookie("UpLoadImageFail")
+      console.log("admin update file 3")
       // ข้อมูลใหม่ที่ส่งมาจาก form edit
       const update_stock = req.body.stock_id
       let date = new Date();
@@ -532,7 +553,8 @@ router.post("/update_stock", (req, res) => {
       })
     }
     else if (req.files.length === 2) {
-      console.log("admin update file 2");
+      res.clearCookie("UpLoadImageFail")
+      console.log("admin update file 2")
       // ข้อมูลใหม่ที่ส่งมาจาก form edit
       const update_stock = req.body.stock_id
       let date = new Date();
@@ -557,8 +579,9 @@ router.post("/update_stock", (req, res) => {
         }
       })
     }
-    else {
-      console.log("admin update file 1");
+    else if (req.files.length === 1) {
+      res.clearCookie("UpLoadImageFail")
+      console.log("admin update file 1")
       // ข้อมูลใหม่ที่ส่งมาจาก form edit
       const update_stock = req.body.stock_id
       let date = new Date();

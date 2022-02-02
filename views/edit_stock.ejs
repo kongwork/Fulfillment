@@ -34,12 +34,17 @@
             <div style="width: 100%; background-color: rgb(245, 245, 245); margin-left: 2px; padding: 50px;">
                 <h2>Edit Stock</h2>
                 <br>
+                <% if (uploadfail != '' ) { %>
+                    <div class="alert alert-danger" role="alert">
+                        <%= uploadfail %>
+                    </div>
+                <% } %>
                 <form action="/update_stock" method="post" style="padding: 20px 100px 0 100px;" enctype="multipart/form-data">
                     <input type="text" name="stock_id" value="<%= stock._id %>" hidden>
                     <div class="mb-3 input-add-u">
                         <label for="" class="form-label">ชื่อลูกค้า</label>
                         <select class="form-select" aria-label="Default select example" name="customer">
-                            <option selected hidden><%= stock.cumtomer %></option>
+                            <option selected hidden><%= stock.customer %></option>
                             <% Object.values(users).forEach(function(item){%>
                             <option><%= item.username %></option>
                             <% }) %>
