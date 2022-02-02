@@ -26,7 +26,7 @@ const storage_img = multer.diskStorage({
 })
 
 const upload = multer ({ storage: storage })
-const upload_img = multer({ storage: storage_img })
+const upload_img = multer({ storage: storage_img }).array('fileimg', 3)
 
 /*User.findOne({ username: "kong" }).exec((err, doc) => {
   console.log(doc);
@@ -95,8 +95,14 @@ router.get("/form_AddStock", (req, res) => {
   Group.find().exec((err, doc) => {
     User.find({typeUser: 'User'}).exec((err, doc_u) => {
       if (req.session.login) {
-        res.render("form_AddStock.ejs", { showname: showname, groups: doc, users: doc_u })
-      } else {
+        if( req.cookies.UpLoadImageFail ) {
+          res.render("form_AddStock.ejs", { showname: showname, groups: doc, users: doc_u, uploadfail: 'Upload image 3 only' })
+        }
+        else {
+          res.render("form_AddStock.ejs", { showname: showname, groups: doc, users: doc_u, uploadfail: '' })
+        }
+      }
+      else {
         res.redirect("/")
       }
     })
@@ -130,7 +136,6 @@ router.get('/logout',(req,res)=>{
 
 router.get("/", (req, res) => {
   console.log(req.session)
-  //res.render('index.ejs', {kong: 'fdfdfdfdfdf'})
   const passfail = 'Username หรือ Password ผิด'
   if(req.session.login_fail != true) {
     res.render("index.ejs", { success: '' })
@@ -361,6 +366,12 @@ router.post("/edit_stock", (req, res) => {
     Group.find().exec((err, doct) => {
       if (req.session.login) {
         Stock.findOne({ _id: edit_stock }).exec((err, doc) => {
+          /*if( req.cookies.UpLoadImageFail ) {
+            res.render("edit_stock", { stock: doc,groups: doct, showname: showname, users: doc_u, uploadfail: 'Upload image 3 only' })
+          }
+          else {
+            res.render("edit_stock", { stock: doc,groups: doct, showname: showname, users: doc_u, uploadfail: '' })
+          }*/
           res.render("edit_stock", { stock: doc,groups: doct, showname: showname, users: doc_u })
         })
       }
@@ -447,70 +458,131 @@ router.post("/update_group", (req, res) => {
 })
 
 //------------------------------------------------------------------------------------ Update Data Stock
-router.post("/update_stock", upload_img.array("fileimg", 3), (req, res) => {
-  if(req.session.typeUser == "User"){
-    const update_stock = req.body.stock_id
-    let date = new Date();
-    let data = {
-      Group: req.body.Group,
-      lastUpdate: date.toLocaleString("th-TH")
+router.post("/update_stock", (req, res) => {
+  upload_img(req, res, function (err) {
+    if (err) {
+      const time = 1000
+      res.cookie("UpLoadImageFail", true, { maxAge: time })
+      console.log('update fial')
     }
-    Stock.findByIdAndUpdate(update_stock,data,{useFindAndModify:false}).exec(err => {
-      if (req.session.typeUser == 'User') {
-        res.redirect("/user_page_stock")
+    else if(req.session.typeUser == "User"){
+      console.log('user update')
+      const update_stock = req.body.stock_id
+      let date = new Date();
+      let data = {
+        Group: req.body.Group,
+        lastUpdate: date.toLocaleString("th-TH")
       }
-      else {
-        res.redirect("/stock")
-      }
-    })
-  }
-  else if (req.files.filename == null && req.session.typeUser == "Admin") {
-    // ข้อมูลใหม่ที่ส่งมาจาก form edit
-    const update_stock = req.body.stock_id
-    let date = new Date();
-    let data = {
-      productName: req.body.productName,
-      Group: req.body.Group,
-      amount: req.body.amount,
-      customer: req.body.customer,
-      lastUpdate: date.toLocaleString("th-TH"),
+      Stock.findByIdAndUpdate(update_stock,data,{useFindAndModify:false}).exec(err => {
+        if (req.session.typeUser == 'User') {
+          res.redirect("/user_page_stock")
+        }
+        else {
+          res.redirect("/stock")
+        }
+      })
     }
-    // อัพเดตข้อมูล Group
-    Stock.findByIdAndUpdate(update_stock,data,{useFindAndModify:false}).exec(err => {
-      if (req.session.typeUser == 'User') {
-        res.redirect("/user_page_stock")
+    else if (!req.files && req.files.length === 0 && req.session.typeUser == "Admin") {
+      console.log("admin update file 0")
+      // ข้อมูลใหม่ที่ส่งมาจาก form edit
+      const update_stock = req.body.stock_id
+      let date = new Date();
+      let data = {
+        productName: req.body.productName,
+        Group: req.body.Group,
+        amount: req.body.amount,
+        customer: req.body.customer,
+        lastUpdate: date.toLocaleString("th-TH"),
       }
-      else {
-        res.redirect("/stock")
-      }
-    })
-  }
-  else {
-    // ข้อมูลใหม่ที่ส่งมาจาก form edit
-    const update_stock = req.body.stock_id
-    let date = new Date();
-    let data = {
-      productName: req.body.productName,
-      Group: req.body.Group,
-      amount: req.body.amount,
-      customer: req.body.customer,
-      imgs: {
-        img01: req.files[0].filename,
-        img02: req.files[1].filename,
-        img03: req.files[2].filename
-      },
-      lastUpdate: date.toLocaleString("th-TH"),
+      // อัพเดตข้อมูล Group
+      Stock.findByIdAndUpdate(update_stock,data,{useFindAndModify:false}).exec(err => {
+        if (req.session.typeUser == 'User') {
+          res.redirect("/user_page_stock")
+        }
+        else {
+          res.redirect("/stock")
+        }
+      })
     }
-    // อัพเดตข้อมูล Group
-    Stock.findByIdAndUpdate(update_stock,data,{useFindAndModify:false}).exec(err => {
-      if (req.session.typeUser == 'User') {
-        res.redirect("/user_page_stock")
+    else if (req.files.length === 3) {
+      console.log("admin update file 3");
+      // ข้อมูลใหม่ที่ส่งมาจาก form edit
+      const update_stock = req.body.stock_id
+      let date = new Date();
+      let data = {
+        productName: req.body.productName,
+        Group: req.body.Group,
+        amount: req.body.amount,
+        customer: req.body.customer,
+        imgs: {
+          img01: req.files[0].filename,
+          img02: req.files[1].filename,
+          img03: req.files[2].filename
+        },
+        lastUpdate: date.toLocaleString("th-TH"),
       }
-      else {
-        res.redirect("/stock")
+      // อัพเดตข้อมูล Group
+      Stock.findByIdAndUpdate(update_stock,data,{useFindAndModify:false}).exec(err => {
+        if (req.session.typeUser == 'User') {
+          res.redirect("/user_page_stock")
+        }
+        else {
+          res.redirect("/stock")
+        }
+      })
+    }
+    else if (req.files.length === 2) {
+      console.log("admin update file 2");
+      // ข้อมูลใหม่ที่ส่งมาจาก form edit
+      const update_stock = req.body.stock_id
+      let date = new Date();
+      let data = {
+        productName: req.body.productName,
+        Group: req.body.Group,
+        amount: req.body.amount,
+        customer: req.body.customer,
+        imgs: {
+          img01: req.files[0].filename,
+          img02: req.files[1].filename
+        },
+        lastUpdate: date.toLocaleString("th-TH"),
       }
-    })
-  }
+      // อัพเดตข้อมูล Group
+      Stock.findByIdAndUpdate(update_stock,data,{useFindAndModify:false}).exec(err => {
+        if (req.session.typeUser == 'User') {
+          res.redirect("/user_page_stock")
+        }
+        else {
+          res.redirect("/stock")
+        }
+      })
+    }
+    else {
+      console.log("admin update file 1");
+      // ข้อมูลใหม่ที่ส่งมาจาก form edit
+      const update_stock = req.body.stock_id
+      let date = new Date();
+      let data = {
+        productName: req.body.productName,
+        Group: req.body.Group,
+        amount: req.body.amount,
+        customer: req.body.customer,
+        imgs: {
+          img01: req.files[0].filename
+        },
+        lastUpdate: date.toLocaleString("th-TH"),
+      }
+      // อัพเดตข้อมูล Group
+      Stock.findByIdAndUpdate(update_stock,data,{useFindAndModify:false}).exec(err => {
+        if (req.session.typeUser == 'User') {
+          res.redirect("/user_page_stock")
+        }
+        else {
+          res.redirect("/stock")
+        }
+      })
+    }
+  })
   // ข้อมูลใหม่ที่ส่งมาจาก form edit
   /*const update_stock = req.body.stock_id
   let date = new Date();
@@ -592,46 +664,94 @@ router.post('/insert_group',(req,res)=>{
 })
 
 //------------------------------------------------------------------------------------ เพิ่มข้อมูล Stock
-router.post('/insert_stock', upload_img.array("fileimg", 3), ( req, res ) => {
-  if (req.files.filename == null) {
-    const name = req.session.username
-    let date = new Date()
-    let data = new Stock({
-      productID: Date.now(),
-      productName: req.body.productName,
-      Group: req.body.groupname,
-      amount: req.body.amount,
-      createdBy: name,
-      customer: req.body.customer,
-      lastUpdate: date.toLocaleString("th-TH"),
-    })
-    Stock.saveStock(data, (err) => {
-      if (err) console.log(err)
-      res.redirect("/stock")
-    })
-  }
-  else {
-    const name = req.session.username
-    let date = new Date()
-    let data = new Stock({
-      productID: Date.now(),
-      productName: req.body.productName,
-      Group: req.body.groupname,
-      amount: req.body.amount,
-      createdBy: name,
-      customer: req.body.customer,
-      imgs: {
-        img01: req.files[0].filename,
-        img02: req.files[1].filename,
-        img03: req.files[2].filename,
-      },
-      lastUpdate: date.toLocaleString("th-TH"),
-    });
-    Stock.saveStock(data, (err) => {
-      if (err) console.log(err)
-      res.redirect("/stock")
-    })
-  }
+router.post('/insert_stock', ( req, res ) => {
+  upload_img(req, res, function (err) {
+    if (err) {
+      const time = 1000
+      res.cookie("UpLoadImageFail", true, { maxAge: time })
+      res.redirect('/form_AddStock')
+    }
+    else if (!req.files || req.files.length === 0) {
+      const name = req.session.username;
+      let date = new Date();
+      let data = new Stock({
+        productID: Date.now(),
+        productName: req.body.productName,
+        Group: req.body.groupname,
+        amount: req.body.amount,
+        createdBy: name,
+        customer: req.body.customer,
+        lastUpdate: date.toLocaleString("th-TH"),
+      });
+      Stock.saveStock(data, (err) => {
+        if (err) console.log(err);
+        res.redirect("/stock");
+      });
+    }
+    else if (req.files.length === 3) {
+      const name = req.session.username;
+      let date = new Date();
+      let data = new Stock({
+        productID: Date.now(),
+        productName: req.body.productName,
+        Group: req.body.groupname,
+        amount: req.body.amount,
+        createdBy: name,
+        customer: req.body.customer,
+        imgs: {
+          img01: req.files[0].filename,
+          img02: req.files[1].filename,
+          img03: req.files[2].filename,
+        },
+        lastUpdate: date.toLocaleString("th-TH"),
+      });
+      Stock.saveStock(data, (err) => {
+        if (err) console.log(err);
+        res.redirect("/stock");
+      });
+    }
+    else if (req.files.length === 2) {
+      const name = req.session.username;
+      let date = new Date();
+      let data = new Stock({
+        productID: Date.now(),
+        productName: req.body.productName,
+        Group: req.body.groupname,
+        amount: req.body.amount,
+        createdBy: name,
+        customer: req.body.customer,
+        imgs: {
+          img01: req.files[0].filename,
+          img02: req.files[1].filename,
+        },
+        lastUpdate: date.toLocaleString("th-TH"),
+      });
+      Stock.saveStock(data, (err) => {
+        if (err) console.log(err);
+        res.redirect("/stock");
+      });
+    }
+    else {
+      const name = req.session.username;
+      let date = new Date();
+      let data = new Stock({
+        productID: Date.now(),
+        productName: req.body.productName,
+        Group: req.body.groupname,
+        amount: req.body.amount,
+        createdBy: name,
+        customer: req.body.customer,
+        imgs: {
+          img01: req.files[0].filename,
+        },
+        lastUpdate: date.toLocaleString("th-TH"),
+      });
+      Stock.saveStock(data, (err) => {
+        if (err) console.log(err);
+        res.redirect("/stock");
+      });
+    }
+  })
 })
 
 //------------------------------------------------------------------------------------ ส่งเมล
