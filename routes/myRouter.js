@@ -3,6 +3,7 @@ const router = express.Router()
 const User = require('../models/user')
 const Group = require("../models/group")
 const Stock = require("../models/stock")
+const Order = require("../models/order")
 var nodemailer = require("nodemailer")
 const XLSX = require('xlsx')
 
@@ -966,6 +967,46 @@ router.post('/export', (req, res) => {
 })
 
 //------------------------------------------------------------------------------------------------------- ส่วนของหน้า Page User ตั้งแต่บรรทัดนี้ลงไป
+router.get("/user_page_order", (req, res) => {
+  const showname  = req.session.username
+  if (req.session.login && req.session.typeUser === 'User') {
+    Stock.find({ customer: showname }).exec((err, doc) => {
+      res.render("user_page_order", { stocks: doc, showname: showname })
+    })
+  } 
+  else {
+    res.redirect("/")
+  }
+})
+
+//------------------------------------------------------------------------------------ เพิ่มข้อมูล order
+router.post('/insert_order',(req,res)=>{
+  let id = req.body.productName
+
+  Stock.findOne({ _id: id }).exec((err, doc) => {
+    let amountData = parseInt(req.body.amount)
+    let amountOrder = doc.amount
+    let productName = doc.productName
+    let se = amountOrder - amountData
+
+    let dataOrder = new Order({
+      customerName: req.body.customerName,
+      address: req.body.address,
+      productName: productName,
+      amount: req.body.amount,
+    });
+    Order.saveOrder(dataOrder, (err) => {
+      if (err) console.log(err);
+      res.redirect("/user_page_order");
+    });
+
+    let data = {
+      amount: se,
+    };
+    Stock.findByIdAndUpdate(id, data, { useFindAndModify: false }).exec(err)
+  })
+})
+
 router.get("/user_page_group", (req, res) => {
   const showname  = req.session.username
   if (req.session.login && req.session.typeUser === 'User') {
@@ -975,7 +1016,7 @@ router.get("/user_page_group", (req, res) => {
     })
   } 
   else {
-    res.render("index")
+    res.redirect("/")
   }
 })
 
@@ -990,7 +1031,7 @@ router.get("/user_page_stock", (req, res) => {
     })
   } 
   else {
-    res.render("index")
+    res.redirect("/")
   }
 })
 
