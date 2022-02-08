@@ -46,7 +46,7 @@
                 <form action="/insert_order" method="post" style="padding: 20px 100px 0 100px;">
                     <div class="mb-3 input-add-u">
                         <label for="" class="form-label">ชื่อลูกค้า</label>
-                        <input type="text" class="form-control" id="" name="customerName" placeholder="CustomerName">
+                        <input type="text" class="form-control" id="" name="customerName" placeholder="CustomerName" required>
                     </div>
                     <div class="mb-3 input-add-u">
                         <label for="" class="form-label">เลื่อกสินค้า</label>
@@ -59,13 +59,13 @@
                     </div>
                     <div class="row mb-3" style="width: 250px;">
                         <label for="" class="col form-label text-b-t-cen">จำนวนสินค้า</label>
-                        <input class="col form-control" type="number" id="quantity" value="0" name="amount" min="0"
+                        <input class="col form-control" type="number" value="0" name="amount" min="0"
                             max="1000">
                     </div>
 
                     <div class="mb-3 input-add-u">
                         <label for="" class="form-label">ที่อยู่</label>
-                        <textarea class="form-control" id="" name="address" rows="3"></textarea>
+                        <textarea class="form-control" name="address" rows="3" required></textarea>
                     </div>
                     <button class="btn btn-primary">บันทึก</button>
                 </form>

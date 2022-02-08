@@ -18,6 +18,7 @@ let stockSchema = mongoose.Schema({
   createdBy: String,
   customer: String,
   amount: Number,
+  price: Number,
   lastUpdate: String,
   imgs: {
     img01: String,

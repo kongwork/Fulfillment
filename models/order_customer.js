@@ -3,15 +3,13 @@ const mongoose = require("mongoose");
 
 // connect MongoDB
 const dbUrl = "mongodb://localhost:27017/mydb";
-mongoose
-  .connect(dbUrl, {
+mongoose.connect(dbUrl, {
     useNewUrlparser: true,
     useUnifiedTopology: true,
-  })
-  .catch((err) => console.log(err));
+  }).catch((err) => console.log(err));
 
 // design Schema
-let orderSchema = mongoose.Schema({
+let ordercustomerSchema = mongoose.Schema({
   orderID: String,
   productID: String,
   productName: String,
@@ -19,12 +17,12 @@ let orderSchema = mongoose.Schema({
 });
 
 // create model
-let Order = mongoose.model("orders", orderSchema);
+let OrderCustomer = mongoose.model("order_customer", ordercustomerSchema)
 
 // export model
-module.exports = Order;
+module.exports = OrderCustomer
 
 //for save data
-module.exports.saveOrder = function (model, data) {
+module.exports.saveOrderCustomer = function (model, data) {
   model.save(data);
 };

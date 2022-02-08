@@ -65,6 +65,7 @@
                             <th scope="col">ชื่อสินค้า</th>
                             <th scope="col">ประเภทสินค้า</th>
                             <th scope="col">จำนวนสินค้า</th>
+                            <th scope="col">ราคา</th>
                             <th scope="col">สร้างโดย</th>
                             <th scope="col">owner</th>
                             <th scope="col">อัพเดทล่าสุด</th>
@@ -80,6 +81,7 @@
                             <td><%= item.productName %></td>
                             <td><%= item.Group %></td>
                             <td><%= item.amount %></td>
+                            <td><%= item.price %></td>
                             <td><%= item.createdBy %></td>
                             <td><%= item.customer %></td>
                             <td><%= item.lastUpdate %></td>
@@ -130,7 +132,7 @@
                             </button>
                         </form>
                     </div>-->
-                    <div class="">
+                    <div>
                         <!-- Button trigger modal -->
                         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal"
                             style="margin-right: auto;">

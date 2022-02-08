@@ -24,10 +24,57 @@
                 <a class="nav-link" href="/user_page_order" style="color: #333333;">Order</a>
             </nav>
             <div style="width: 100%; background-color: rgb(245, 245, 245); margin-left: 2px; padding: 50px;">
-                <div class="row" style="width: 600px;">
-                    <h2 class="col" style="margin: auto;">Product Detail</h2>
-                    <p class="col" style="margin: auto; color: rgb(109, 109, 109);">Last update <%= stock.lastUpdate %></p>
-                </div>
+                <nav class="navbar">
+                    <div class="container-fluid">
+                        <h2 style="margin: auto 20px auto 0">Product Detail</h2>
+                        <p style="margin: auto auto auto 0; color: rgb(109, 109, 109);">Last update <%= stock.lastUpdate %></p>
+                        <!-- Button trigger modal -->
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                            เพิ่มลงในตะกร้า
+                        </button>
+                    </div>
+                </nav>
+                <!-- Modal -->
+                <form action="/add_order" method="post">
+                    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLabel">กรอกจำนวนที่ต้องการ</h5>
+                                    <button type="reset" value="reset" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <div class="col mb-3">
+                                            <input type="text" class="form-control" name="productID" value="<%= stock.productID %>" hidden>
+                                            <label for="" class="form-label">ชื่อสินค้า</label>
+                                            <input type="text" class="form-control" value="<%= stock.productName %>" name="productName" hidden>
+                                            <input type="text" class="form-control" value="<%= stock.productName %>" disabled>
+                                        </div>
+                                        <div class="col mb-3">
+                                            <label for="" class="form-label">ประเภทสินค้า</label>
+                                            <input type="text" class="form-control" value="<%= stock.Group %>" name="productType" disabled>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col mb-3">
+                                            <label for="" class="form-label">จำนวนสินค้าที่มี</label>
+                                            <input type="text" class="form-control" value="<%= stock.amount %>" disabled>
+                                        </div>
+                                        <div class="col mb-3">
+                                            <label class="form-label">จำนวนสินค้าที่ต้องการ</label>
+                                            <input class="form-control" name="amount" type="number" value="0" min="0" max="1000" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="reset" value="reset" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                                    <button type="submit" class="btn btn-primary">เพิ่มสินค้า</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
                 <br>
                 <div class="row md-3">
                     <div class="col" style="margin: auto;">
