@@ -22,7 +22,7 @@ router.get("/user_page_cart", (req, res) => {
     let num = 1
     if (req.session.login && req.session.typeUser == "User") {
         Order.find({ orderID: req.cookies.orderID }).exec((err, doc) => {
-            res.render("user_page_cart", { showname: showname, order: doc, num: num })
+            res.render("user_page_cart", { showname: showname, order: doc, num: num, b:0 })
         })
     }
     else {
@@ -34,12 +34,78 @@ router.get("/user_page_cart", (req, res) => {
 router.post("/add_order", (req, res) => {
     let order_id = Math.random().toString(36).substring(2)
     res.cookie("order", true)
-    if(req.cookies.order) {
+    Order.findOne({ productID: req.body.productID }).exec((err, doc) => {
+        if (!doc) {
+            if(req.cookies.order) {
+                let data = new Order({
+                    orderID: req.cookies.orderID,
+                    productID: req.body.productID,
+                    productName: req.body.productName,
+                    amount: req.body.amount,
+                    price: req.body.price
+                })
+                Order.saveOrder(data, (err) => {
+                    if (err) console.log(err)
+                    res.redirect("/user_page_stock")
+                })
+
+                /*let set_amount = parseInt(doc.amount) - parseInt(req.body.amount)
+                let set_data = {
+                    amount: set_amount
+                }
+                Stock.findByIdAndUpdate( doc._id, set_data, {useFindAndModify:false}).exec(err => {
+                    res.redirect('/user_page_cart')
+                })*/
+            }
+            else {
+                res.cookie("orderID", order_id)
+                let data = new Order({
+                    orderID: order_id,
+                    productID: req.body.productID,
+                    productName: req.body.productName,
+                    amount: req.body.amount,
+                    price: req.body.price
+                })
+                Order.saveOrder(data, (err) => {
+                    if (err) console.log(err)
+                    res.redirect("/user_page_stock")
+                })
+            }
+            Stock.findOne({ productID: req.body.productID }).exec((err, doc_s) => {
+                let set_amount = parseInt(doc_s.amount) - parseInt(req.body.amount)
+                let set_data = {
+                    amount: set_amount
+                }
+                Stock.findByIdAndUpdate( doc_s._id, set_data, {useFindAndModify:false}).exec(err)
+                console.log(set_amount)
+            })
+        }
+        else {
+            let add_amount = parseInt(doc.amount) + parseInt(req.body.amount)
+            console.log(doc._id)
+            let data = {
+                amount: add_amount
+            }
+            Order.findByIdAndUpdate( doc._id, data, {useFindAndModify:false}).exec(err => {
+                res.redirect('/user_page_cart')
+            })
+            Stock.findOne({ productID: req.body.productID }).exec((err, doc_s) => {
+                let set_amount = parseInt(doc_s.amount) - parseInt(req.body.amount)
+                let set_data = {
+                    amount: set_amount
+                }
+                Stock.findByIdAndUpdate( doc_s._id, set_data, {useFindAndModify:false}).exec(err)
+                console.log(set_amount)
+            })
+        }
+    })
+    /*if(req.cookies.order) {
         let data = new Order({
             orderID: req.cookies.orderID,
             productID: req.body.productID,
             productName: req.body.productName,
-            amount: req.body.amount
+            amount: req.body.amount,
+            price: req.body.price
         })
         Order.saveOrder(data, (err) => {
             if (err) console.log(err)
@@ -52,13 +118,14 @@ router.post("/add_order", (req, res) => {
             orderID: order_id,
             productID: req.body.productID,
             productName: req.body.productName,
-            amount: req.body.amount
+            amount: req.body.amount,
+            price: req.body.price
         })
         Order.saveOrder(data, (err) => {
             if (err) console.log(err)
             res.redirect("/user_page_stock")
         })
-    }
+    }*/
 })
 
 router.post("/insert_order", (req, res) => {

@@ -16,6 +16,7 @@ let orderSchema = mongoose.Schema({
   productID: String,
   productName: String,
   amount: Number,
+  price: Number
 });
 
 // create model
