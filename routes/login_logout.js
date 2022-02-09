@@ -5,6 +5,7 @@ const Group = require("../models/group");
 const Stock = require("../models/stock");
 const Order = require("../models/order");
 
+// login
 router.post('/login',(req,res)=>{
     const username = req.body.username
     const password = req.body.password
@@ -37,6 +38,17 @@ router.post('/login',(req,res)=>{
             }
         }
     })
+})
+
+// logout
+router.get('/logout',(req,res)=>{
+    req.session.destroy((err) => {
+        res.redirect("/")
+    })
+    /*res.clearCookie('username')
+    res.clearCookie("password")
+    res.clearCookie("login")
+    res.redirect("/")*/
 })
 
 module.exports = router;

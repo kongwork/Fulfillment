@@ -3,10 +3,15 @@ const path = require('path')
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
 const router = require('./routes/myRouter')
-const login = require('./routes/login')
+const login_logout = require('./routes/login_logout')
 const order = require("./routes/order")
 const edit = require("./routes/edit")
 const AddData = require("./routes/add_data")
+const SearchDataStock = require("./routes/search_data_stock")
+const SearchDataGroup = require("./routes/search_data_group")
+const SearchDataUser = require("./routes/search_data_user")
+const DeleteData = require("./routes/delete")
+const ExportFile = require("./routes/export_file_xlsx")
 const app = express()
 
 
@@ -17,11 +22,18 @@ app.set('view engine','ejs')
 app.use(cookieParser())
 app.use(express.urlencoded({extended:false}))
 app.use(session({secret:"mysession",resave:false,saveUninitialized:false}))
-app.use(router)
-app.use(order)
-app.use(login)
-app.use(edit)
-app.use(AddData)
+app.use(
+    router,
+    order,
+    login_logout,
+    edit,
+    AddData,
+    SearchDataStock,
+    SearchDataGroup,
+    SearchDataUser,
+    DeleteData,
+    ExportFile
+)
 app.use(express.static(path.join(__dirname,'public')))
 
 app.listen(8080,()=>{
