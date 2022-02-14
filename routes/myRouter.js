@@ -151,7 +151,7 @@ router.get("/user", (req, res) => {
       res.render("user", { users: doc, order: order, showname: showname})
     })
   }
-  else{
+  else {
     res.redirect('/')
   }
 })

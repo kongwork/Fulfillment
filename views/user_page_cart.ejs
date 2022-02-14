@@ -36,7 +36,7 @@
                         </button>
                         
                         <!-- Modal -->
-                        <form action="/import_file" method="post" enctype="multipart/form-data">
+                        <form action="/delivery" method="post">
                             <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
@@ -45,13 +45,22 @@
                                             <button type="reset" value="reset" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>
                                         <div class="modal-body">
-                                            <form action="/import_file" method="post" enctype="multipart/form-data">
-                                                <input class="form-control" name="filexlsx" type="file" />
-                                            </form>
+                                            <div>
+                                                <label for="" class="form-label">ชื่อ</label>
+                                                <input type="text" class="form-control" id="" name="FirstName" placeholder="">
+                                            </div>
+                                            <div>
+                                                <label for="" class="form-label">นามสกุล</label>
+                                                <input type="text" class="form-control" id="" name="LastName" placeholder="">
+                                            </div>
+                                            <div>
+                                                <label for="" class="form-label">ที่อยู่จัดส่ง</label>
+                                                <textarea class="form-control" name="Address" rows="3" required></textarea>
+                                            </div>
                                         </div>
                                         <div class="modal-footer">
                                             <button type="reset" value="reset" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                                            <button type="submit" class="btn btn-primary">เพิ่มสินค้า</button>
+                                            <button type="submit" class="btn btn-primary">ตกลง</button>
                                         </div>
                                     </div>
                                 </div>

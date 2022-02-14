@@ -21,7 +21,8 @@ router.post('/login',(req,res)=>{
                 req.session.username = username
                 req.session.password = password
                 req.session.typeUser = 'User'
-                req.session.login = true;
+                //res.cookie("login", true)
+                req.session.login = true
                 //req.session.cookie.maxAge = 30000
                 res.redirect("/user_page_group")
             }
@@ -29,7 +30,8 @@ router.post('/login',(req,res)=>{
                 req.session.username = username
                 req.session.password = password
                 req.session.typeUser = 'Admin'
-                req.session.login = true;
+                //res.cookie("login", true)
+                req.session.login = true
                 //req.session.cookie.maxAge = 30000
                 res.redirect("/user")
             }

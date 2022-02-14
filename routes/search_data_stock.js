@@ -9,7 +9,7 @@ router.post("/search_stock", (req, res) => {
     const showname = req.session.username
     if(req.session.login){
         let order = 1
-        let query = { productName: req.body.search }
+        let query = { productName: { $regex: '^' + req.body.search, $options : 'i' } }
         let filter = { Group: req.body.filter_group }
         let group_select = req.body.filter_group
         let input_search = '' + req.body.search
@@ -20,20 +20,23 @@ router.post("/search_stock", (req, res) => {
             Group.find().exec((err, doct) => {
                 Stock.find(filter).exec((err, doc) => {
                     res.render("search_stock", { stocks: doc,groups: doct, order: order, showname: showname, a: group_select, b: input_search })
+                    console.log('1')
                 })
             })
         }
         else if (input_search != "" && group_select != 'ทั้งหมด') {
             Group.find().exec((err, doct) => {
-                Stock.find({ productName: input_search, Group: group_select }).exec((err, doc) => {
+                Stock.find({ productName: { $regex: '^' + req.body.search, $options : 'i' }, Group: group_select }).exec((err, doc) => {
                     res.render("search_stock", { stocks: doc,groups: doct, order: order, showname: showname, a: group_select, b: input_search })
+                    console.log('2')
                 })
             })
         }
         else {
             Group.find().exec((err, doct) => {
-                Stock.find(query).exec((err, doc) => {
+                Stock.find(query,filter).exec((err, doc) => {
                     res.render("search_stock", { stocks: doc,groups: doct, order: order, showname: showname, a: group_select, b: input_search })
+                    console.log('3')
                 })
             })
         }

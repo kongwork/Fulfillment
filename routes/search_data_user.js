@@ -8,7 +8,7 @@ router.post("/search", (req, res) => {
         let order = 1
         //let query = { username: { $regex: /^MOSY/i } }
         //let username = { username: req.body.search }
-        let query = { username: req.body.search }
+        let query = { username: { $regex: '^' + req.body.search, $options : 'i' } }
         /*User.find(query).exec((err, doc) => {
             res.render("search_user", { users: doc, order: order })
             console.log(doc)

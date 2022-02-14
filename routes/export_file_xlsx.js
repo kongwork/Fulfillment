@@ -9,8 +9,21 @@ router.post('/export', (req, res) => {
     let filter = { Group: req.body.filter_group }
     let group_select = req.body.filter_group
     let input_search = '' + req.body.search
+    let SelectField = {
+        _id: 0,
+        productName: 1,
+        productID: 1,
+        productName: 1,
+        Group: 1,
+        createdBy: 1,
+        customer: 1,
+        amount: 1,
+        price: 1,
+        lastUpdate: 1
+    }
     if (group_select === 'ทั้งหมด' && input_search === "") {
-        Stock.find().exec((err, doc) => {
+        Stock.find().select(SelectField).exec((err, doc) => {
+            console.log(doc)
             const file_name = Date.now() + ".xlsx"
             let wb = xlsx.utils.book_new()
             if (err) {

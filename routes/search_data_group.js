@@ -6,7 +6,7 @@ router.post("/search_group", (req, res) => {
     const showname = req.session.username;
     if(req.session.login){
         let order = 1
-        let query = { groupname: req.body.search }
+        let query = { groupname: { $regex: '^' + req.body.search, $options : 'i' } }
         input_search_null = req.body.search
         if (input_search_null === "") {
             res.redirect("/group")

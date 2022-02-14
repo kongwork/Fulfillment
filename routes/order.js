@@ -3,7 +3,8 @@ const router = express.Router();
 const User = require("../models/user");
 const Group = require("../models/group");
 const Stock = require("../models/stock");
-const Order = require("../models/order");
+const Order = require("../models/order")
+const OrderAddress = require("../models/order_address")
 
 router.get("/user_page_order", (req, res) => {
     const showname  = req.session.username
@@ -28,56 +29,50 @@ router.get("/user_page_cart", (req, res) => {
     else {
         res.redirect("/")
     }
-    console.log(req.cookies.orderID)
 })
 
 router.post("/add_order", (req, res) => {
-    let order_id = Math.random().toString(36).substring(2)
-    res.cookie("order", true)
-    Order.findOne({ productID: req.body.productID }).exec((err, doc) => {
+    Order.findOne({ orderID: req.cookies.orderID }).exec((err, doc) => {
         if (!doc) {
-            if(req.cookies.order) {
-                let data = new Order({
-                    orderID: req.cookies.orderID,
-                    productID: req.body.productID,
-                    productName: req.body.productName,
-                    amount: req.body.amount,
-                    price: req.body.price
-                })
-                Order.saveOrder(data, (err) => {
-                    if (err) console.log(err)
-                    res.redirect("/user_page_stock")
-                })
-
-                /*let set_amount = parseInt(doc.amount) - parseInt(req.body.amount)
-                let set_data = {
-                    amount: set_amount
-                }
-                Stock.findByIdAndUpdate( doc._id, set_data, {useFindAndModify:false}).exec(err => {
-                    res.redirect('/user_page_cart')
-                })*/
-            }
-            else {
-                res.cookie("orderID", order_id)
-                let data = new Order({
-                    orderID: order_id,
-                    productID: req.body.productID,
-                    productName: req.body.productName,
-                    amount: req.body.amount,
-                    price: req.body.price
-                })
-                Order.saveOrder(data, (err) => {
-                    if (err) console.log(err)
-                    res.redirect("/user_page_stock")
-                })
-            }
+            let OrderID = Math.random().toString(36).substring(2)
+            res.cookie("orderID", OrderID)
+            let data = new Order({
+                orderID: OrderID,
+                productID: req.body.productID,
+                productName: req.body.productName,
+                amount: req.body.amount,
+                price: req.body.price
+            })
+            Order.saveOrder(data, (err) => {
+                if (err) console.log(err)
+                res.redirect("/user_page_stock")
+            })
             Stock.findOne({ productID: req.body.productID }).exec((err, doc_s) => {
                 let set_amount = parseInt(doc_s.amount) - parseInt(req.body.amount)
                 let set_data = {
                     amount: set_amount
                 }
                 Stock.findByIdAndUpdate( doc_s._id, set_data, {useFindAndModify:false}).exec(err)
-                console.log(set_amount)
+            })
+        }
+        else if (doc) {
+            let data = new Order({
+                orderID: req.cookies.orderID,
+                productID: req.body.productID,
+                productName: req.body.productName,
+                amount: req.body.amount,
+                price: req.body.price
+            })
+            Order.saveOrder(data, (err) => {
+                if (err) console.log(err)
+                res.redirect("/user_page_stock")
+            })
+            Stock.findOne({ productID: req.body.productID }).exec((err, doc_s) => {
+                let set_amount = parseInt(doc_s.amount) - parseInt(req.body.amount)
+                let set_data = {
+                    amount: set_amount
+                }
+                Stock.findByIdAndUpdate( doc_s._id, set_data, {useFindAndModify:false}).exec(err)
             })
         }
         else {
@@ -95,37 +90,23 @@ router.post("/add_order", (req, res) => {
                     amount: set_amount
                 }
                 Stock.findByIdAndUpdate( doc_s._id, set_data, {useFindAndModify:false}).exec(err)
-                console.log(set_amount)
             })
         }
     })
-    /*if(req.cookies.order) {
-        let data = new Order({
-            orderID: req.cookies.orderID,
-            productID: req.body.productID,
-            productName: req.body.productName,
-            amount: req.body.amount,
-            price: req.body.price
-        })
-        Order.saveOrder(data, (err) => {
-            if (err) console.log(err)
-            res.redirect("/user_page_stock")
-        })
-    }
-    else {
-        res.cookie("orderID", order_id)
-        let data = new Order({
-            orderID: order_id,
-            productID: req.body.productID,
-            productName: req.body.productName,
-            amount: req.body.amount,
-            price: req.body.price
-        })
-        Order.saveOrder(data, (err) => {
-            if (err) console.log(err)
-            res.redirect("/user_page_stock")
-        })
-    }*/
+})
+
+router.post("/delivery", (req, res) => {
+    let data = new OrderAddress({
+        OrderID: req.cookies.orderID,
+        FirstName: req.body.FirstName,
+        LastName: req.body.LastName,
+        Address: req.body.Address
+    })
+    OrderAddress.saveOrderAddress(data, (err) => {
+        if (err) console.log(err)
+        res.clearCookie("orderID")
+        res.redirect("/user_page_stock")
+    })
 })
 
 router.post("/insert_order", (req, res) => {
