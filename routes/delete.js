@@ -17,7 +17,12 @@ router.get("/delete/:id", (req, res) => {
 router.get("/delete_group/:id", (req, res) => {
     Group.findByIdAndDelete(req.params.id,{useFindAndModify:false}).exec(err=>{
         if(err) console.log(err)
-        res.redirect('/group')
+        if (req.session.typeUser == 'Admin') {
+            res.redirect("/group")
+        }
+        else {
+            res.redirect("/user_page_group")
+        }
     })
 })
 
