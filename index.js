@@ -12,6 +12,7 @@ const SearchDataGroup = require("./routes/search_data_group")
 const SearchDataUser = require("./routes/search_data_user")
 const DeleteData = require("./routes/delete")
 const ExportFile = require("./routes/export_file_xlsx")
+const ImportFile = require("./routes/import_file_xlsx")
 const app = express()
 
 
@@ -32,7 +33,8 @@ app.use(
     SearchDataGroup,
     SearchDataUser,
     DeleteData,
-    ExportFile
+    ExportFile,
+    ImportFile
 )
 app.use(express.static(path.join(__dirname,'public')))
 

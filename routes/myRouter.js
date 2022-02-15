@@ -5,7 +5,6 @@ const Group = require("../models/group")
 const Stock = require("../models/stock")
 const Order = require("../models/order")
 var nodemailer = require("nodemailer")
-const XLSX = require('xlsx')
 
 // อัพโหลดไฟล์
 const multer = require("multer")
@@ -271,33 +270,6 @@ router.post('/send_pass',(req,res)=>{
       res.redirect("/");
     }
   })
-})
-
-//------------------------------------------------------------------------------------ Import file xlsx
-router.post('/import_file' , upload.single("filexlsx"), (req, res) => {
-
-  const name = req.session.username
-
-  const workbook = XLSX.readFile("./public/uploads/" + req.file.filename);
-  const sheetNames = workbook.SheetNames;
-
-  // Get the data of "Sheet1"
-  const worksheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetNames[0]]);
-
-  worksheet.map((doc) => {
-    let date = new Date()
-    let data = new Stock({
-      productName: doc.productName,
-      Group: doc.Group,
-      amount: doc.amount,
-      createdBy: name,
-      lastUpdate: date.toLocaleString("th-TH")
-    })
-    Stock.saveStock(data, (err) => {
-      if (err) console.log(err)
-    })
-  });
-  res.redirect('/stock')
 })
 
 //------------------------------------------------------------------------------------------------------- ส่วนของหน้า Page User ตั้งแต่บรรทัดนี้ลงไป
