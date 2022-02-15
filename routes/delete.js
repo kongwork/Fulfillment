@@ -49,4 +49,25 @@ router.get("/delete_order/:id/:b", (req, res) => {
     })
 })
 
+router.post("/MultiDelete", (req, res) => {
+  const checkedItemId = req.body.deleteArray;
+  const splitArray = checkedItemId.split(",");
+  /*if (checkedItemId == null) {
+        res.redirect("/stock")
+    }
+    else {
+        Stock.findByIdAndRemove(checkedItemId, function (err) {
+            if (!err)
+            console.log("Successfully deletd the Id")
+            res.redirect("/stock")
+        })
+    }*/
+    splitArray.forEach((item) => {
+        Stock.findByIdAndRemove(item, function (err) {
+        if (!err) console.log(`Successfully deleted id: ${item}`);
+        });
+    });
+    res.redirect("/stock");
+});
+
 module.exports = router
