@@ -34,7 +34,7 @@ router.post("/search_stock", (req, res) => {
         }
         else {
             Group.find().exec((err, doct) => {
-                Stock.find(query,filter).exec((err, doc) => {
+                Stock.find(query).exec((err, doc) => {
                     res.render("search_stock", { stocks: doc,groups: doct, order: order, showname: showname, a: group_select, b: input_search })
                     console.log('3')
                 })

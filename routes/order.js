@@ -109,7 +109,7 @@ router.post("/delivery", (req, res) => {
     })
 })
 
-router.post("/insert_order", (req, res) => {
+/*router.post("/insert_order", (req, res) => {
   let id = req.body.productName
 
   Stock.findOne({ _id: id }).exec((err, doc) => {
@@ -134,6 +134,6 @@ router.post("/insert_order", (req, res) => {
     }
     Stock.findByIdAndUpdate(id, data, { useFindAndModify: false }).exec(err)
   })
-})
+})*/
 
 module.exports = router
